@@ -8,7 +8,7 @@ import net.minecraft.registry.Registry;
 public class PoolModelRenderers {
 
 	public static final SpecialModelRenderer LIGHT_SKYBOX_RENDERER = get("light_skybox",
-		new SkyboxRenderer("test"));
+		new SkyboxRenderer("light"));
 
 	public static void init() {
 		PoolRooms.LOGGER.info("Registering Model Renderers for " + PoolRooms.MOD_NAME);

@@ -65,13 +65,13 @@ dependencies {
 //	modImplementation("org.quiltmc.quilted-fabric-api:fabric-rendering-data-attachment-v1:7.0.5+0.84.0-1.20.1")
 
 
-	modCompileOnly("maven.modrinth:sodium:mc1.20.1-0.5.13-fabric") // works
-	modCompileOnly("maven.modrinth:iris:1.7.6+1.20.1") // works
+	modCompileOnly("maven.modrinth:sodium:mc1.20.1-0.5.3-fabric") // works
+	modCompileOnly("maven.modrinth:iris:1.6.11+1.20.1") // works
 
 //	modRuntimeOnly("maven.modrinth:sodium:mc1.20.1-0.5.13-fabric")
 //	modRuntimeOnly("maven.modrinth:iris:1.7.6+1.20.1")
 
-	includeMod libs.ludocrypt.limlib
+//	includeMod libs.ludocrypt.limlib
 	includeMod libs.ludocrypt.specialmodels
 }
 

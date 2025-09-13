@@ -6,14 +6,13 @@
 		"version": "${version}",
 		"metadata": {
 			"name": "The Library",
-			"description": "A short description of your mod.",
+			"description": "A mod that adds something truly special...",
 			"contributors": {
-				"Your name here": "Owner"
+				"Arjun Nara": "Owner"
 			},
 			"contact": {
-				"homepage": "https://example.com/",
-				"issues": "https://github.com/QuiltMC/quilt-template-mod/issues",
-				"sources": "https://github.com/QuiltMC/quilt-template-mod"
+				"sources": "https://github.com/QuiltMC/quilt-template-mod",
+				"github": "https://github.com/IndianArjun94/Pool-Rooms-1.20.1-Quilt"
 			},
 			"icon": "assets/pool/icon.png"
 		},

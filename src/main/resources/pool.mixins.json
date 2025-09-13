@@ -1,17 +1,18 @@
 {
-	"required": true,
-	"minVersion": "0.8",
-	"package": "net.arjun.pool.mixin",
-	"compatibilityLevel": "JAVA_17",
-	"mixins": [],
-	"client": [
-      "TitleScreenMixin",
-      "FrustumAccessor",
-      "GameRendererAccessor",
-      "WorldRendererAccessor",
-      "MinecraftClientAccessor"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.arjun.pool.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [],
+  "client": [
+    "FrustumAccessor",
+    "GameRendererAccessor",
+    "MinecraftClientAccessor",
+    "TitleScreenMixin",
+    "WorldRendererAccessor",
+    "WorldRendererMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }
