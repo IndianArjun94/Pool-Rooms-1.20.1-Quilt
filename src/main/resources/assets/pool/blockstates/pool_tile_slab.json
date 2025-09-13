@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "type=bottom": {
+      "model": "pool:block/pool_tile_slab"
+    },
+    "type=double": {
+      "model": "pool:block/pool_tiles"
+    },
+    "type=top": {
+      "model": "pool:block/pool_tile_slab_top"
+    }
+  }
+}

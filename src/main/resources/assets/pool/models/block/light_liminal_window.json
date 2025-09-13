@@ -1,0 +1,6 @@
+{
+	"parent": "minecraft:block/glass",
+	"specialmodels": {
+		"pool:light_skybox": "pool:shader/light_liminal_window"
+	}
+}
