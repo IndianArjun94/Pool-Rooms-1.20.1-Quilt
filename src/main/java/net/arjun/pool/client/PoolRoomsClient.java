@@ -4,9 +4,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormats;
 import net.arjun.pool.PoolRooms;
-import net.arjun.pool.block.OffsetPoolTiles.OffsetPoolTilesBE;
-import net.arjun.pool.block.OffsetPoolTiles.OffsetPoolTilesBER;
-import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.coderbot.iris.Iris;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
@@ -34,10 +31,6 @@ public class PoolRoomsClient implements ClientModInitializer {
 	public void onInitializeClient(ModContainer mod) {
 		BlockRenderLayerMap
 			.put(RenderLayer.getTranslucent(), PoolBlocks.LIGHT_LIMINAL_WINDOW);
-
-		BlockEntityRendererFactories.register(
-			PoolBlockEntities.OFFSET_POOL_TILES_BE,
-			(context) -> new OffsetPoolTilesBER());
 
 		try {
 			if (QuiltLoader.isModLoaded("iris")) {

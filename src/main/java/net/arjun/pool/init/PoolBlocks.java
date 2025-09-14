@@ -33,6 +33,9 @@ public class PoolBlocks {
 	public static final Block LIGHT_LIMINAL_WINDOW = registerBlock("light_liminal_window",
 		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3)));
 
+	public static final Block POOL_BOOKSHELF = registerBlock("pool_bookshelf",
+		new Block(QuiltBlockSettings.copyOf(Blocks.CHISELED_BOOKSHELF)));
+
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);
 		return Registry.register(Registries.BLOCK, new Identifier(PoolRooms.MOD_ID, name), block);
