@@ -1,5 +1,6 @@
 package net.arjun.pool;
 
+import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.arjun.pool.init.PoolModelRenderers;
 import net.minecraft.util.Identifier;
@@ -24,6 +25,7 @@ public class PoolRooms implements ModInitializer {
 		MOD_NAME = mod.metadata().name();
 
 		PoolBlocks.init();
+		PoolBlockEntities.registerBlockEntities();
 		PoolModelRenderers.init();
 	}
 

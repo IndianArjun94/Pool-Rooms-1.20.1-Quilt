@@ -2,6 +2,7 @@ package net.arjun.pool.init;
 
 import net.arjun.pool.PoolRooms;
 import net.arjun.pool.block.SkyboxGlassBlock;
+import net.arjun.pool.block.CyanLightCubeBlock;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
 import net.minecraft.data.family.BlockFamily;
@@ -35,6 +36,9 @@ public class PoolBlocks {
 
 	public static final Block POOL_BOOKSHELF = registerBlock("pool_bookshelf",
 		new Block(QuiltBlockSettings.copyOf(Blocks.CHISELED_BOOKSHELF)));
+
+	public static final Block CYAN_LIGHT_CUBE = registerBlock("cyan_light_cube",
+		new CyanLightCubeBlock());
 
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);
