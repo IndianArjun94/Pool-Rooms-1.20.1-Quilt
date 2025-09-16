@@ -41,7 +41,7 @@ public class PoolRoomsWorldMap {
 //            System.out.println("Set: (" + x + "," + y + ")");
     }
 
-    private RoomType getSpot(int x1, int y1) {
+    public RoomType getSpot(int x1, int y1) {
         if ((Y_BOUND)-y1 <= Y_BOUND-1 && (Y_BOUND)-y1 >= 0 && x1-1 <= X_BOUND-1 && x1-1 >= 0) {
             if (rooms[(Y_BOUND) - y1][x1 - 1] != null) {
                 return rooms[(Y_BOUND) - y1][x1 - 1].type;

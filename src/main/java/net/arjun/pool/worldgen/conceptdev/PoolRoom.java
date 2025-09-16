@@ -27,6 +27,8 @@ public class PoolRoom {
 
 	public RoomPosition ENTRANCE1;
 	public RoomPosition ENTRANCE2;
+	public RoomPosition ENTRANCE3;
+	public RoomPosition ENTRANCE4;
 
 	public Direction NORTH_ENTRANCE;
 	public Direction EAST_ENTRANCE;

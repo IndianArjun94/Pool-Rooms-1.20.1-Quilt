@@ -13,10 +13,8 @@ public class WorldGenConceptNew {
 
 //		Gen Starts Here!!!!!
 
-		boolean deadEndHit = false;
-
-		int x = startingX;
-		int y = startingY+1;
+		int x = startingX-1;
+		int y = startingY;
 
 		PoolRoom previousRoom = map.getRoom(startingX,startingY);
 		PoolRoom currentRoom = null;
@@ -28,9 +26,13 @@ public class WorldGenConceptNew {
 //				make room
 				if (map.roomIsAvailable(RoomType.R1x1, x,y,x,y)) {
 					map.setRoom(RoomType.R1x1, x,y,x,y);
-				} else {
+				} else if (map.getSpot(x,y) == null) { // path has encountered a room!!!!!
+					break;
+				} else { // *CRIES SOBS ALL THE THINGS* path has encountered room bounds (WIDTH*HEIGHT)
 					break;
 				}
+
+//				NORMAL ROUTE: generate room in the path and connect it (entrances)
 				currentRoom = map.getRoom(x,y);
 
 //				make entrances
@@ -54,27 +56,36 @@ public class WorldGenConceptNew {
 				int[] check3 = {x,y-1}; //down
 				int[] check4 = {x-1,y}; //left
 
-				int secondRandom = ThreadLocalRandom.current().nextInt(1, 7);
+				boolean checkDone = false;
 
-				if ((secondRandom == 1 || secondRandom == 2 || secondRandom == 3) && map.getRoom(check1[0], check1[1]) == null) { // set next room location
-					x = check1[0];
-					y = check1[1];
-				} else if (secondRandom == 4 && map.getRoom(check2[0], check2[1]) == null) {
-					x = check2[0];
-					y = check2[1];
-				} else if (secondRandom == 5 && map.getRoom(check3[0], check3[1]) == null) {
-					x = check3[0];
-					y = check3[1];
-				} else if (secondRandom == 6 && map.getRoom(check4[0], check4[1]) == null) {
-					x = check4[0];
-					y = check4[1];
-				} else { // if random selected a non-valid room location:
-					if (map.getRoom(check1[0],check1[1])==null) {
+				int secondRandom = ThreadLocalRandom.current().nextInt(1, 6);
+
+				if ((secondRandom == 1 || secondRandom == 2 || secondRandom == 3)) { // set next room location
+					int thirdRandom = ThreadLocalRandom.current().nextInt(1, 3);
+					if (thirdRandom == 1 && map.getRoom(check1[0], check1[1]) == null) {
 						x = check1[0];
 						y = check1[1];
-					} else if (map.getRoom(check2[0],check2[1])==null) {
+						checkDone = true;
+					} else if (map.getRoom(check3[0], check3[1]) == null){
+						x = check3[0];
+						y = check3[1];
+						checkDone = true;
+					}
+				} if (secondRandom == 4 && map.getRoom(check2[0], check2[1]) == null) {
+					x = check2[0];
+					y = check2[1];
+					checkDone = true;
+				} else if (secondRandom == 5 && map.getRoom(check4[0], check4[1]) == null) {
+					x = check4[0];
+					y = check4[1];
+					checkDone = true;
+				} else if (!checkDone) { // if random selected a non-valid room location:
+					if (map.getRoom(check2[0],check2[1])==null) {
 						x = check2[0];
 						y = check2[1];
+					} else if (map.getRoom(check1[0],check1[1])==null) {
+						x = check1[0];
+						y = check1[1];
 					} else if (map.getRoom(check3[0],check3[1])==null) {
 						x = check3[0];
 						y = check3[1];
