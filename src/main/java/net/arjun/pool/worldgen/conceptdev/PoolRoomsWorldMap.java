@@ -103,16 +103,16 @@ public class PoolRoomsWorldMap {
     }
 
     public void print() {
-        for (int i = 1; i <= Y_BOUND; i++) {
-            for (int j = 1; j <= X_BOUND; j++) {
+        for (int y = 1; y <= Y_BOUND; y++) {
+            for (int x = 1; x <= X_BOUND; x++) {
 				try {
-					switch (Objects.requireNonNull(getSpot(j, i))) {
+					switch (Objects.requireNonNull(getSpot(x, y))) {
 						case R1x1 -> System.out.print("  1   ");
 						case R1x2 -> System.out.print("  2   ");
 						case R1x3 -> System.out.print("  3   ");
 						case R2x2 -> System.out.print("  4   ");
-						case STARTING -> System.out.println("  S   ");
-						default -> System.out.println("      ");
+						case STARTING -> System.out.print("  S   ");
+						default -> System.out.print("      ");
 					}
 				} catch (Exception ignored676767) {
 					System.out.print("      ");
