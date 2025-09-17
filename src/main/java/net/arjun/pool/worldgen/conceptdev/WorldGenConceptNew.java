@@ -1,5 +1,7 @@
 package net.arjun.pool.worldgen.conceptdev;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class WorldGenConceptNew {
@@ -13,11 +15,14 @@ public class WorldGenConceptNew {
 
 //		Gen Starts Here!!!!!
 
-		int x = startingX-1;
-		int y = startingY;
+		int x = startingX;
+		int y = startingY+1;
 
 		PoolRoom previousRoom = map.getRoom(startingX,startingY);
 		PoolRoom currentRoom = null;
+
+		PoolGenMove previousMove = PoolGenMove.NORTH;
+		PoolGenMove currentMove = null;
 
 		while (true) {
 			int random3 = ThreadLocalRandom.current().nextInt(1, 4);
@@ -25,9 +30,38 @@ public class WorldGenConceptNew {
 //			if (random3 == 1) {
 //				make room
 				if (map.roomIsAvailable(RoomType.R1x1, x,y,x,y)) {
-					map.setRoom(RoomType.R1x1, x,y,x,y);
-				} else if (map.getSpot(x,y) == null) { // path has encountered a room!!!!!
-					break;
+					map.setRoom(RoomType.R1x1, x, y, x, y);
+//				} else if (map.getSpot(x,y) == null) { // path has encountered a room!!!!!
+////					break;
+//					if (previousMove == PoolGenMove.NORTH) {
+//						if (!map.spotIsAvailable(x,y+1)) {
+//							break;
+//						}
+//					} else if (previousMove == PoolGenMove.EAST) {
+//						if (!map.spotIsAvailable(x+1,y)) {
+//							break;
+//						}
+//					} else if (previousMove == PoolGenMove.SOUTH) {
+//						if (!map.spotIsAvailable(x,y-1)) {
+//							break;
+//						}
+//					} else if (previousMove == PoolGenMove.WEST) {
+//						if (!map.spotIsAvailable(x-1,y)) {
+//							break;
+//						}
+//					}
+//
+//					currentRoom = map.getRoom(x,y);
+//
+//					if (previousMove == PoolGenMove.NORTH) {
+//						currentRoom.ENTRANCE2 = RoomPosition.NORTH;
+//						map.getRoom(x,y+1).ENTRANCE3 = RoomPosition.SOUTH;
+//						map.getRoom(x,y+1).ENTRANCE4 = RoomPosition.NORTH;
+//
+//					}
+//
+////					we can now start pathing entrances through the previously generated room we encountered!
+//				}
 				} else { // *CRIES SOBS ALL THE THINGS* path has encountered room bounds (WIDTH*HEIGHT)
 					break;
 				}
@@ -39,15 +73,19 @@ public class WorldGenConceptNew {
 				if (previousRoom.x+1 == currentRoom.x) { // going right
 					previousRoom.ENTRANCE2 = RoomPosition.EAST; // previous room entrance to current
 					currentRoom.ENTRANCE1 = RoomPosition.WEST; // current room entrance to previous
+					currentMove = PoolGenMove.EAST;
 				} else if (previousRoom.x-1 == currentRoom.x) { // going left
 					previousRoom.ENTRANCE2 = RoomPosition.WEST;
 					currentRoom.ENTRANCE1 = RoomPosition.EAST;
+					currentMove = PoolGenMove.WEST;
 				} else if (previousRoom.y+1 == currentRoom.y) { // going up
 					previousRoom.ENTRANCE2 = RoomPosition.NORTH;
 					currentRoom.ENTRANCE1 = RoomPosition.SOUTH;
+					currentMove = PoolGenMove.NORTH;
 				} else if (previousRoom.y-1 == currentRoom.y) { // going down
 					previousRoom.ENTRANCE2 = RoomPosition.SOUTH;
 					currentRoom.ENTRANCE1 = RoomPosition.NORTH;
+					currentMove = PoolGenMove.SOUTH;
 				}
 
 //				decide next room location
@@ -58,44 +96,46 @@ public class WorldGenConceptNew {
 
 				boolean checkDone = false;
 
-				int secondRandom = ThreadLocalRandom.current().nextInt(1, 6);
+				int secondRandom = ThreadLocalRandom.current().nextInt(1, 5);
 
-				if ((secondRandom == 1 || secondRandom == 2 || secondRandom == 3)) { // set next room location
-					int thirdRandom = ThreadLocalRandom.current().nextInt(1, 3);
-					if (thirdRandom == 1 && map.getRoom(check1[0], check1[1]) == null) {
-						x = check1[0];
-						y = check1[1];
-						checkDone = true;
-					} else if (map.getRoom(check3[0], check3[1]) == null){
-						x = check3[0];
-						y = check3[1];
-						checkDone = true;
-					}
-				} if (secondRandom == 4 && map.getRoom(check2[0], check2[1]) == null) {
+				if (secondRandom == 1 && map.getRoom(check1[0], check1[1]) == null) { // set next room location
+					x = check1[0];
+					y = check1[1];
+					checkDone = true;
+				} else if (secondRandom == 2 && map.getRoom(check2[0], check2[1]) == null) {
 					x = check2[0];
 					y = check2[1];
 					checkDone = true;
-				} else if (secondRandom == 5 && map.getRoom(check4[0], check4[1]) == null) {
+				} else if (secondRandom == 3 && map.getRoom(check3[0], check3[1]) == null) {
+					x = check3[0];
+					y = check3[1];
+					checkDone = true;
+				} else if (secondRandom == 4 && map.getRoom(check4[0], check4[1]) == null) {
 					x = check4[0];
 					y = check4[1];
 					checkDone = true;
 				} else if (!checkDone) { // if random selected a non-valid room location:
+					List<int[]> possibleChecks = new ArrayList<>();
 					if (map.getRoom(check2[0],check2[1])==null) {
-						x = check2[0];
-						y = check2[1];
-					} else if (map.getRoom(check1[0],check1[1])==null) {
-						x = check1[0];
-						y = check1[1];
-					} else if (map.getRoom(check3[0],check3[1])==null) {
-						x = check3[0];
-						y = check3[1];
-					} else if (map.getRoom(check4[0],check4[1])==null) {
-						x = check4[0];
-						y = check4[1];
+						possibleChecks.add(check2);
+					} if (map.getRoom(check1[0],check1[1])==null) {
+						possibleChecks.add(check1);
+					} if (map.getRoom(check3[0],check3[1])==null) {
+						possibleChecks.add(check3);
+					} if (map.getRoom(check4[0],check4[1])==null) {
+						possibleChecks.add(check4);
 					}
+
+					if (possibleChecks.isEmpty()) break;
+
+					int thirdRandom = ThreadLocalRandom.current().nextInt(0, possibleChecks.size());
+
+					x = possibleChecks.get(thirdRandom)[0];
+					y = possibleChecks.get(thirdRandom)[1];
 				}
 
 				previousRoom = currentRoom;
+				previousMove = currentMove;
 //			}
 		}
 

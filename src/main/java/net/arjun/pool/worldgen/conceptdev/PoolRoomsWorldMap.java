@@ -103,7 +103,7 @@ public class PoolRoomsWorldMap {
     }
 
     public void print() {
-        for (int y = 1; y <= Y_BOUND; y++) {
+        for (int y = Y_BOUND; y > 0 ; y--) {
             for (int x = 1; x <= X_BOUND; x++) {
 				try {
 					switch (Objects.requireNonNull(getSpot(x, y))) {
