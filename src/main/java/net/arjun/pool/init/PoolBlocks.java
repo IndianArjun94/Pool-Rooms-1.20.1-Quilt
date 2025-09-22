@@ -3,9 +3,12 @@ package net.arjun.pool.init;
 import net.arjun.pool.PoolRooms;
 import net.arjun.pool.block.SkyboxGlassBlock;
 import net.arjun.pool.block.CyanLightCubeBlock;
+import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
 import net.minecraft.data.family.BlockFamily;
+import net.minecraft.entity.effect.StatusEffect;
+import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -40,6 +43,15 @@ public class PoolBlocks {
 	public static final Block CYAN_LIGHT_CUBE = registerBlock("cyan_light_cube",
 		new CyanLightCubeBlock());
 
+	public static final Block POOL_LEAVES = registerBlock("pool_leaves",
+		Blocks.createLeavesBlock(BlockSoundGroup.AZALEA_LEAVES));
+
+//	public static final Block POOL_PLANT = registerBlock("pool_plant",
+//		new FlowerBlock(StatusEffects.REGENERATION, 5, QuiltBlockSettings.copyOf(Blocks.DANDELION)));
+//
+//	public static final Block POTTED_POOL_PLANT = registerBlock("potted_pool_plant",
+//		new FlowerPotBlock(POOL_PLANT, QuiltBlockSettings.copyOf(Blocks.POTTED_DANDELION)));
+
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);
 		return Registry.register(Registries.BLOCK, new Identifier(PoolRooms.MOD_ID, name), block);
@@ -54,5 +66,14 @@ public class PoolBlocks {
 
 	public static void init() {
 		PoolRooms.LOGGER.info("Registering Blocks for " + PoolRooms.MOD_NAME);
+
+//		RegistryEntryAddedCallback.event(Registries.BLOCK).register((rawId, id, object) -> {
+//			if (object == POOL_PLANT) {
+//				((FlowerPotBlock) Blocks.FLOWER_POT).(
+//					new Identifier("yourmodid", "my_plant"),
+//					() -> POTTED_MY_PLANT
+//				);
+//			}
+//		});
 	}
 }
