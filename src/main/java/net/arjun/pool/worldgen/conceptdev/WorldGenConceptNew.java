@@ -31,43 +31,13 @@ public class WorldGenConceptNew {
 //				make room
 				if (map.roomIsAvailable(RoomType.R1x1, x,y,x,y)) {
 					map.setRoom(RoomType.R1x1, x, y, x, y);
-//				} else if (map.getSpot(x,y) == null) { // path has encountered a room!!!!!
-////					break;
-//					if (previousMove == PoolGenMove.NORTH) {
-//						if (!map.spotIsAvailable(x,y+1)) {
-//							break;
-//						}
-//					} else if (previousMove == PoolGenMove.EAST) {
-//						if (!map.spotIsAvailable(x+1,y)) {
-//							break;
-//						}
-//					} else if (previousMove == PoolGenMove.SOUTH) {
-//						if (!map.spotIsAvailable(x,y-1)) {
-//							break;
-//						}
-//					} else if (previousMove == PoolGenMove.WEST) {
-//						if (!map.spotIsAvailable(x-1,y)) {
-//							break;
-//						}
-//					}
-//
-//					currentRoom = map.getRoom(x,y);
-//
-//					if (previousMove == PoolGenMove.NORTH) {
-//						currentRoom.ENTRANCE2 = RoomPosition.NORTH;
-//						map.getRoom(x,y+1).ENTRANCE3 = RoomPosition.SOUTH;
-//						map.getRoom(x,y+1).ENTRANCE4 = RoomPosition.NORTH;
-//
-//					}
-//
-////					we can now start pathing entrances through the previously generated room we encountered!
-//				}
+//					we can now start pathing entrances through the previously generated room we encountered!
 				} else { // *CRIES SOBS ALL THE THINGS* path has encountered room bounds (WIDTH*HEIGHT)
 					break;
 				}
 
 //				NORMAL ROUTE: generate room in the path and connect it (entrances)
-				currentRoom = map.getRoom(x,y);
+				currentRoom = map.getRoom(x,y); // room we just made at our current position
 
 //				make entrances
 				if (previousRoom.x+1 == currentRoom.x) { // going right
