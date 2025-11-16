@@ -6,6 +6,7 @@ import net.arjun.pool.block.CyanLightCubeBlock;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
@@ -35,7 +36,7 @@ public class PoolBlocks {
 			.build();
 
 	public static final Block LIGHT_LIMINAL_WINDOW = registerBlock("light_liminal_window",
-		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3)));
+		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3).pistonBehavior(PistonBehavior.IGNORE)));
 
 	public static final Block POOL_BOOKSHELF = registerBlock("pool_bookshelf",
 		new Block(QuiltBlockSettings.copyOf(Blocks.CHISELED_BOOKSHELF)));

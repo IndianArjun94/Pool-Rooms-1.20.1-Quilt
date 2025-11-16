@@ -1,9 +1,16 @@
 package net.arjun.pool;
 
+import com.mojang.serialization.Codec;
 import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.arjun.pool.init.PoolModelRenderers;
+import net.arjun.pool.worldgen.PoolChunkGenerator;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.slf4j.Logger;
@@ -18,15 +25,25 @@ public class PoolRooms implements ModInitializer {
 	public static final String MOD_ID = "pool";
 	public static String MOD_NAME;
 
+	public static final RegistryKey<Codec<? extends ChunkGenerator>> POOL_CHUNK_GENERATOR =
+		RegistryKey.of(RegistryKeys.CHUNK_GENERATOR, new Identifier("pool", "pool_chunk_generator"));
+
+	public static final Codec<PoolChunkGenerator> POOL_CHUNK_GENERATOR_CODEC = PoolChunkGenerator.CODEC;
+
 	@Override
 	public void onInitialize(ModContainer mod) {
 		LOGGER.info("Hello Quilt world from {}!", mod.metadata().name());
 
 		MOD_NAME = mod.metadata().name();
 
+
 		PoolBlocks.init();
 		PoolBlockEntities.registerBlockEntities();
 		PoolModelRenderers.init();
+
+		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
+
+
 	}
 
 	public static Identifier id(String id) {
