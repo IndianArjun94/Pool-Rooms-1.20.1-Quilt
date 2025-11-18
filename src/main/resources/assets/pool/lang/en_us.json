@@ -7,5 +7,7 @@
   "block.pool.light_liminal_window": "Light Liminal Window",
   "block.pool.cyan_light_cube": "Light Cube",
 
-  "block.pool.pool_leaves": "Pool Leaves"
+  "block.pool.pool_leaves": "Pool Leaves",
+
+  "block.pool.debug_portal": "Debug Portal"
 }

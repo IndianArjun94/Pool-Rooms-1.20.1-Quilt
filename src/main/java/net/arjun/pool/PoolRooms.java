@@ -5,11 +5,16 @@ import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.arjun.pool.init.PoolModelRenderers;
 import net.arjun.pool.worldgen.PoolChunkGenerator;
+import net.minecraft.world.World;
+import org.quiltmc.qsl.lifecycle.api.event.ServerLifecycleEvents;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
@@ -30,6 +35,9 @@ public class PoolRooms implements ModInitializer {
 
 	public static final Codec<PoolChunkGenerator> POOL_CHUNK_GENERATOR_CODEC = PoolChunkGenerator.CODEC;
 
+	public static final RegistryKey<World> THE_LIBRARY_KEY =
+		RegistryKey.of(RegistryKeys.WORLD, new Identifier(MOD_ID, "library_dimension"));
+
 	@Override
 	public void onInitialize(ModContainer mod) {
 		LOGGER.info("Hello Quilt world from {}!", mod.metadata().name());
@@ -43,6 +51,20 @@ public class PoolRooms implements ModInitializer {
 
 		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
 
+		ServerLifecycleEvents.STARTING.register(server -> {
+			ServerWorld dim = server.getWorld(THE_LIBRARY_KEY);
+			if (dim != null) {
+				BlockPos spawn = dim.getSpawnPos();
+				ChunkPos cp = new ChunkPos(spawn);
+
+				// Force-load a radius around spawn
+				for (int dx = -2; dx <= 2; dx++) {
+					for (int dz = -2; dz <= 2; dz++) {
+						dim.setChunkForced(cp.x + dx, cp.z + dz, true);
+					}
+				}
+			}
+		});
 
 	}
 

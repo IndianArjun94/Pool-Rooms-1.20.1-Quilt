@@ -1,6 +1,7 @@
 package net.arjun.pool.init;
 
 import net.arjun.pool.PoolRooms;
+import net.arjun.pool.block.DebugPortalBlock;
 import net.arjun.pool.block.SkyboxGlassBlock;
 import net.arjun.pool.block.CyanLightCubeBlock;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
@@ -52,6 +53,9 @@ public class PoolBlocks {
 //
 //	public static final Block POTTED_POOL_PLANT = registerBlock("potted_pool_plant",
 //		new FlowerPotBlock(POOL_PLANT, QuiltBlockSettings.copyOf(Blocks.POTTED_DANDELION)));
+
+	public static final Block DEBUG_PORTAL = registerBlock("debug_portal",
+		new DebugPortalBlock(QuiltBlockSettings.copyOf(Blocks.STONE), PoolRooms.THE_LIBRARY_KEY));
 
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);

@@ -11,6 +11,9 @@ import java.util.*;
 public class PoolWorldState extends PersistentState {
 	public long seed;
 
+	public static ArrayList<Map<Pair<Integer,Integer>, RoomNode>> roomMaps;
+	public static ArrayList<Long> seeds;
+
 	private PoolWorldState() {
 		this.seed = new Random().nextLong(); // new world, random seed
 	}
@@ -54,7 +57,7 @@ public class PoolWorldState extends PersistentState {
 		frontier.add(start3);
 		frontier.add(start4);
 
-		int roomsToGenerate = 40;
+		int roomsToGenerate = 250;
 
 		while (!frontier.isEmpty() && rooms.size() < roomsToGenerate) {
 			RoomNode room = frontier.poll(); // gets first element and removes it
