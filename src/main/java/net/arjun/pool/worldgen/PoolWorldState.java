@@ -88,7 +88,7 @@ public class PoolWorldState extends PersistentState {
 
 				Pair<Integer,Integer> key = Pair.of(nx,nz);
 
-				if (!rooms.containsKey(key)) { // we are on an empty room
+				if (!rooms.containsKey(key) && !onStartingRoom(key)) { // we are on an empty, non-starting room
 					RoomNode newRoom = new RoomNode(nx,nz);
 					rooms.put(key, newRoom);
 
@@ -96,7 +96,7 @@ public class PoolWorldState extends PersistentState {
 					newRoom.connections.add(room);
 
 					frontier.add(newRoom);
-				} else { // we are on an already-generated room
+				} else if (rooms.containsKey(key)){ // we are on an already-generated non-starting room
 					RoomNode currentRoom = rooms.get(key);
 					if (!room.connections.contains(currentRoom)) {
 						room.connections.add(currentRoom);
@@ -113,6 +113,12 @@ public class PoolWorldState extends PersistentState {
 		return rooms;
 	}
 
+//	Helpers -----------
+
+	private boolean onStartingRoom(Pair<Integer,Integer> key) {
+		return key.first >= -1 && key.first <= 1 &&
+			key.second >= -1 && key.second <= 1;
+	}
 	private List<Direction> shuffledDirections(long seed) {
 		Random random = new Random(seed);
 		List<Direction> dirs = new ArrayList<>(Arrays.asList(
