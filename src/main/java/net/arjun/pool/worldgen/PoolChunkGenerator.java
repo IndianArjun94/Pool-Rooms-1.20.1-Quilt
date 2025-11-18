@@ -5,6 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.sun.jdi.Mirror;
 import net.arjun.pool.PoolRooms;
+import net.arjun.pool.init.PoolBlocks;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.data.client.model.VariantSettings;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.Structure;
@@ -77,7 +80,7 @@ public class PoolChunkGenerator extends ChunkGenerator {
 
 		Pair<Integer, Integer> chunkPos = Pair.of(chunkX,chunkZ);
 
-		if (roomMap.containsKey(chunkPos)) {
+		if (roomMap.containsKey(chunkPos) && !(chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1)) {
 
 			RoomNode room = roomMap.get(chunkPos);
 
@@ -99,6 +102,86 @@ public class PoolChunkGenerator extends ChunkGenerator {
 				placementData,
 				world.getRandom(),
 				0);
+
+//			for (int x = 5; x < 11; x++) {
+//				for (int z = 5; z < 11; z++) {
+//					chunk.setBlockState(
+//						new BlockPos(x,100,z),
+//						PoolBlocks.POOL_TILES.getDefaultState(),
+//						false
+//					);
+//				}
+//			}
+//
+//			for (RoomNode neighbor : room.connections) {
+//				int minx = 5;
+//				int minz = 5;
+//				int maxx = 11;
+//				int maxz = 11;
+//				boolean changed = false;
+//
+//				if (neighbor.x > room.x) {
+//					minx = 11;
+//					maxx = 16;
+//					changed = true;
+//				} if (neighbor.x < room.x) {
+//					minx = 0;
+//					maxx = 5;
+//					changed = true;
+//				} if (neighbor.z > room.z) {
+//					minz = 11;
+//					maxz = 16;
+//					changed = true;
+//				} if (neighbor.z < room.z) {
+//					minz = 0;
+//					maxz = 5;
+//					changed = true;
+//				}
+//
+//				if (!changed) return;
+//
+//
+//				for (int x = minx; x < maxx; x++) {
+//					for (int z = minz; z < maxz; z++) {
+//						chunk.setBlockState(
+//							new BlockPos(x,100,z),
+//							PoolBlocks.POOL_TILES.getDefaultState(),
+//							false
+//						);
+//					}
+//				}
+//			}
+		} else {
+			if (chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1) {
+				StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
+				Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start"));
+				Optional<Structure> _structure2 = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start_top"));
+
+				StructurePlacementData placementData = new StructurePlacementData()
+					.setRotation(BlockRotation.NONE)
+					.setMirror(BlockMirror.NONE)
+					.setIgnoreEntities(true);
+
+				if (!_structure.isPresent()) return;
+				if (!_structure2.isPresent()) return;
+
+				Structure structure = _structure.get();
+				Structure structure2 = _structure2.get();
+
+				structure.place(world,
+					new BlockPos(-16, 80-6, -16),
+					new BlockPos(0, 0, 0),
+					placementData,
+					world.getRandom(),
+					0);
+
+				structure2.place(world,
+					new BlockPos(-16, 80-6+48, -16),
+					new BlockPos(0, 0, 0),
+					placementData,
+					world.getRandom(),
+					0);
+			}
 		}
 	}
 
