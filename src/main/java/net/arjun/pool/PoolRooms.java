@@ -50,22 +50,6 @@ public class PoolRooms implements ModInitializer {
 		PoolModelRenderers.init();
 
 		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
-
-		ServerLifecycleEvents.STARTING.register(server -> {
-			ServerWorld dim = server.getWorld(THE_LIBRARY_KEY);
-			if (dim != null) {
-				BlockPos spawn = dim.getSpawnPos();
-				ChunkPos cp = new ChunkPos(spawn);
-
-				// Force-load a radius around spawn
-				for (int dx = -2; dx <= 2; dx++) {
-					for (int dz = -2; dz <= 2; dz++) {
-						dim.setChunkForced(cp.x + dx, cp.z + dz, true);
-					}
-				}
-			}
-		});
-
 	}
 
 	public static Identifier id(String id) {

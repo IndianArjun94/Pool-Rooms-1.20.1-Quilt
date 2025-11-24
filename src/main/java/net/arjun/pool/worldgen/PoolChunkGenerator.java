@@ -32,10 +32,7 @@ import net.minecraft.world.gen.chunk.Blender;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import net.minecraft.world.gen.chunk.VerticalBlockSample;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -58,6 +55,18 @@ public class PoolChunkGenerator extends ChunkGenerator {
 
 	}
 
+	public static void fillBlock(Chunk chunk, int minX, int maxX, int minZ, int maxZ, int y, int chunkX, int chunkZ, BlockState state) {
+		for (int x = minX; x < maxX; x++) {
+			for (int z = minZ; z < maxZ; z++) {
+				chunk.setBlockState(
+					new BlockPos((chunkX*16)+x,y,(chunkZ*16)+z),
+					state,
+					false
+				);
+			}
+		}
+	}
+
 	@Override
 	public void generateFeatures(StructureWorldAccess world, Chunk chunk, StructureManager structureManager) {
 		ServerWorld serverWorld = null;
@@ -78,111 +87,98 @@ public class PoolChunkGenerator extends ChunkGenerator {
 		int chunkX = chunk.getPos().x;
 		int chunkZ = chunk.getPos().z;
 
-		Pair<Integer, Integer> chunkPos = Pair.of(chunkX,chunkZ);
+		Pair<Integer,Integer> q1 = Pair.of(chunkX*2,chunkZ*2);
+		Pair<Integer,Integer> q2 = Pair.of(chunkX*2+1,chunkZ*2);
+		Pair<Integer,Integer> q3 = Pair.of(chunkX*2,chunkZ*2+1);
+		Pair<Integer,Integer> q4 = Pair.of(chunkX*2+1,chunkZ*2+1);
 
-		if (roomMap.containsKey(chunkPos) && !(chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1)) {
+		Pair<Integer,Integer>[] quadrants = new Pair[]{q1,q2,q3,q4};
 
-			RoomNode room = roomMap.get(chunkPos);
+		for (int i = 0; i < 4; i++) {
+			Pair<Integer,Integer> currentQuadrant = quadrants[i];
 
-			StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
-			Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, room.structureId));
+			if (!roomMap.containsKey(currentQuadrant)) continue;
 
-			StructurePlacementData placementData = new StructurePlacementData()
-				.setRotation(BlockRotation.NONE)
-				.setMirror(BlockMirror.NONE)
-				.setIgnoreEntities(true);
+//			Test START
+			fillBlock(chunk, currentQuadrant.first*8+3, currentQuadrant.first*8+5, currentQuadrant.second*8+3, currentQuadrant.second*8+5, 20, chunkX, chunkZ, Blocks.SEA_LANTERN.getDefaultState());
 
-			if (!_structure.isPresent()) return;
+			RoomNode room = roomMap.get(currentQuadrant);
 
-			Structure structure = _structure.get();
+			int minX = room.gridX*8+3;
+			int minZ = room.gridZ*8+3;
 
-			structure.place(world,
-				new BlockPos(chunkX * 16, 80, chunkZ * 16),
-				new BlockPos(0, 0, 0),
-				placementData,
-				world.getRandom(),
-				0);
+			int maxX = minX+2;
+			int maxZ = minZ+2;
 
-//			for (int x = 5; x < 11; x++) {
-//				for (int z = 5; z < 11; z++) {
-//					chunk.setBlockState(
-//						new BlockPos(x,100,z),
-//						PoolBlocks.POOL_TILES.getDefaultState(),
-//						false
-//					);
-//				}
-//			}
-//
-//			for (RoomNode neighbor : room.connections) {
-//				int minx = 5;
-//				int minz = 5;
-//				int maxx = 11;
-//				int maxz = 11;
-//				boolean changed = false;
-//
-//				if (neighbor.x > room.x) {
-//					minx = 11;
-//					maxx = 16;
-//					changed = true;
-//				} if (neighbor.x < room.x) {
-//					minx = 0;
-//					maxx = 5;
-//					changed = true;
-//				} if (neighbor.z > room.z) {
-//					minz = 11;
-//					maxz = 16;
-//					changed = true;
-//				} if (neighbor.z < room.z) {
-//					minz = 0;
-//					maxz = 5;
-//					changed = true;
-//				}
-//
-//				if (!changed) return;
-//
-//
-//				for (int x = minx; x < maxx; x++) {
-//					for (int z = minz; z < maxz; z++) {
-//						chunk.setBlockState(
-//							new BlockPos(x,100,z),
-//							PoolBlocks.POOL_TILES.getDefaultState(),
-//							false
-//						);
-//					}
-//				}
-//			}
-		} else {
-			if (chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1) {
-				StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
-				Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start"));
-				Optional<Structure> _structure2 = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start_top"));
+			int y = 10;
 
-				StructurePlacementData placementData = new StructurePlacementData()
-					.setRotation(BlockRotation.NONE)
-					.setMirror(BlockMirror.NONE)
-					.setIgnoreEntities(true);
-
-				if (!_structure.isPresent()) return;
-				if (!_structure2.isPresent()) return;
-
-				Structure structure = _structure.get();
-				Structure structure2 = _structure2.get();
-
-				structure.place(world,
-					new BlockPos(-16, 80-6, -16),
-					new BlockPos(0, 0, 0),
-					placementData,
-					world.getRandom(),
-					0);
-
-				structure2.place(world,
-					new BlockPos(-16, 80-6+48, -16),
-					new BlockPos(0, 0, 0),
-					placementData,
-					world.getRandom(),
-					0);
+			if (room.roomSize == RoomSize.START) {
+				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.REDSTONE_BLOCK.getDefaultState());
+			} else {
+				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.DIAMOND_BLOCK.getDefaultState());
 			}
+
+			if (room.westConnection != null) fillBlock(chunk, minX-3, maxX-2, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+			if (room.eastConnection != null) fillBlock(chunk, minX+2, maxX+3, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+			if (room.southConnection != null) fillBlock(chunk, minX, maxX, minZ+2, maxZ+3, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+			if (room.northConnection != null) fillBlock(chunk, minX, maxX, minZ-3, maxZ-2, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
 		}
+
+//		if (roomMap.containsKey(chunkPos) && !(chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1)) {
+//
+//			RoomNode room = roomMap.get(chunkPos);
+//
+//			StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
+//			Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, room.structureId));
+//
+//			StructurePlacementData placementData = new StructurePlacementData()
+//				.setRotation(BlockRotation.NONE)
+//				.setMirror(BlockMirror.NONE)
+//				.setIgnoreEntities(true);
+//
+//			if (!_structure.isPresent()) return;
+//
+//			Structure structure = _structure.get();
+//
+//			structure.place(world,
+//				new BlockPos(room.x * 16, 80, room.z * 16),
+//				new BlockPos(0, 0, 0),
+//				placementData,
+//				world.getRandom(),
+//				0);
+
+
+//		} else {
+//			if (chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1) {
+//				StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
+//				Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start"));
+//				Optional<Structure> _structure2 = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start_top"));
+//
+//				StructurePlacementData placementData = new StructurePlacementData()
+//					.setRotation(BlockRotation.NONE)
+//					.setMirror(BlockMirror.NONE)
+//					.setIgnoreEntities(true);
+//
+//				if (!_structure.isPresent()) return;
+//				if (!_structure2.isPresent()) return;
+//
+//				Structure structure = _structure.get();
+//				Structure structure2 = _structure2.get();
+//
+//				structure.place(world,
+//					new BlockPos(-16, 80-6, -16),
+//					new BlockPos(0, 0, 0),
+//					placementData,
+//					world.getRandom(),
+//					0);
+//
+//				structure2.place(world,
+//					new BlockPos(-16, 80-6+48, -16),
+//					new BlockPos(0, 0, 0),
+//					placementData,
+//					world.getRandom(),
+//					0);
+//			}
 	}
 
 	@Override

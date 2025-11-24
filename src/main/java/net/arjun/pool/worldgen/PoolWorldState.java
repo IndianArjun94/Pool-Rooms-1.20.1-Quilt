@@ -38,90 +38,139 @@ public class PoolWorldState extends PersistentState {
 		return nbt;
 	}
 
-	public Map<Pair<Integer, Integer>, RoomNode> generateRooms(long seed) {
+	public Map<Pair<Integer,Integer>,RoomNode> generateRooms(long seed) {
+		final int roomsToGenerate = 20000;
+
 		Random random = new Random(seed);
 
-		Map<Pair<Integer, Integer>, RoomNode> rooms = new HashMap<>();
-		Queue<RoomNode> frontier = new LinkedList<>();
+		Map<Pair<Integer,Integer>,RoomNode> rooms = new HashMap<>(); // all rooms and their positions
+		Queue<RoomNode> frontier = new LinkedList<>(); // rooms that need to generate entrances
 
-		RoomNode start = new RoomNode(2,0);
-		RoomNode start2 = new RoomNode(-2,0);
-		RoomNode start3 = new RoomNode(0,2);
-		RoomNode start4 = new RoomNode(0,-2);
-		rooms.put(Pair.of(2,0), start);
-		rooms.put(Pair.of(-2,0), start2);
-		rooms.put(Pair.of(0,2), start3);
-		rooms.put(Pair.of(0,-2), start4);
+		RoomNode start = new RoomNode(-1,-1,3,3,RoomSize.START);
+		start.northConnectionPosition = Pair.of(start.gridX+1, start.gridZ);
+		start.westConnectionPosition = Pair.of(start.gridX, start.gridZ+1);
+		start.eastConnectionPosition = Pair.of(start.gridX+start.gridLengthX-1, start.gridZ+1);
+		start.southConnectionPosition = Pair.of(start.gridX+1, start.gridZ+start.gridLengthZ-1);
 		frontier.add(start);
-		frontier.add(start2);
-		frontier.add(start3);
-		frontier.add(start4);
 
-		int roomsToGenerate = 250;
+//		CODE TO ADD A ROOM ------------------------------------------
+		for (int x = start.gridX; x < start.gridX + start.gridLengthX; x++) {
+			for (int z = start.gridZ; z < start.gridZ + start.gridLengthZ; z++) {
+				rooms.put(Pair.of(x,z), start);
+			}
+		}
+//		-------------------------------------------------------------
 
 		while (!frontier.isEmpty() && rooms.size() < roomsToGenerate) {
-			RoomNode room = frontier.poll(); // gets first element and removes it
-
-			int branches = 1+random.nextInt(3); // 1-3 branches per room
-
+			RoomNode currentRoom = frontier.poll(); // we need to generate more rooms from this room (branches)
+			int branchesToGenerate = random.nextInt(0,3)+1; // generate 1-3 branches per room
+			if (currentRoom == start) branchesToGenerate = 4; // if this is the starting room, generate 4 branches
 			List<Direction> dirs = shuffledDirections(random.nextLong());
 
-			if (room == start || room == start2 || room == start3 || room == start4) {
-				branches = 1;
-			}
-
-			for (int i = 0; i < branches; i++) {
+			for (int i = 0; i < branchesToGenerate; i++) {
 				Direction dir = dirs.get(i);
-				if (room == start) {
-					dir = Direction.EAST;
-					room.connections.add(new RoomNode(1,0));
-				} else if (room == start2) {
-					dir = Direction.WEST;
-					room.connections.add(new RoomNode(-1,0));
-				} else if (room == start3) {
-					dir = Direction.SOUTH;
-					room.connections.add(new RoomNode(0,1));
-				} else if (room == start4) {
-					dir = Direction.NORTH;
-					room.connections.add(new RoomNode(0,-1));
-				}
+				if (dir == Direction.NORTH) if (!currentRoom.northAllowed) continue;
+				if (dir == Direction.EAST) if (!currentRoom.eastAllowed) continue;
+				if (dir == Direction.SOUTH) if (!currentRoom.southAllowed) continue;
+				if (dir == Direction.WEST) if (!currentRoom.westAllowed) continue;
 
-				int nx = room.x + dirX(dir);
-				int nz = room.z + dirZ(dir);
+				int nx = currentRoom.gridX;
+				int nz = currentRoom.gridZ;
+
+				// We assume the NEW room is 1x1.
+				// If new rooms can be larger, you must account for newRoom.width in the subtraction logic.
+				switch (dir) {
+					case NORTH:
+						nx = currentRoom.northConnectionPosition.first;
+						// Optional: Add offset to x to center the door? Currently aligns to top-left corner.
+						nz = currentRoom.northConnectionPosition.second-1;
+						break;
+
+					case SOUTH:
+						nx = currentRoom.southConnectionPosition.first; // Move past the bottom edge
+						nz = currentRoom.southConnectionPosition.second+1;
+						break;
+					case WEST:
+						nx = currentRoom.westConnectionPosition.first-1;
+						nz = currentRoom.westConnectionPosition.second;
+						break;
+					case EAST:
+						nx = currentRoom.eastConnectionPosition.first+1;
+						nz = currentRoom.eastConnectionPosition.second;
+						break;
+				}
 
 				Pair<Integer,Integer> key = Pair.of(nx,nz);
 
-				if (!rooms.containsKey(key) && !onStartingRoom(key)) { // we are on an empty, non-starting room
-					RoomNode newRoom = new RoomNode(nx,nz);
-					rooms.put(key, newRoom);
+				if (!rooms.containsKey(key)) { // we can generate a new room here
+					RoomNode newRoom = new RoomNode(nx,nz,1,1,RoomSize.R1x1);
+					newRoom.northConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ);
+					newRoom.westConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ);
+					newRoom.eastConnectionPosition = Pair.of(newRoom.gridX+newRoom.gridLengthX-1, newRoom.gridZ);
+					newRoom.southConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ+newRoom.gridLengthZ-1);
 
-					room.connections.add(newRoom);
-					newRoom.connections.add(room);
+					if (dir == Direction.NORTH) {
+						currentRoom.northConnection = newRoom;
+						newRoom.southConnection = currentRoom;
+					} else if (dir == Direction.EAST) {
+						currentRoom.eastConnection = newRoom;
+						newRoom.westConnection = currentRoom;
+					} else if (dir == Direction.SOUTH) {
+						currentRoom.southConnection = newRoom;
+						newRoom.northConnection = currentRoom;
+					} else if (dir == Direction.WEST) {
+						currentRoom.westConnection = newRoom;
+						newRoom.eastConnection = currentRoom;
+					} // set the connections
+
+					for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
+						for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
+							rooms.put(Pair.of(x,z), newRoom);
+						}
+					}
 
 					frontier.add(newRoom);
-				} else if (rooms.containsKey(key)){ // we are on an already-generated non-starting room
-					RoomNode currentRoom = rooms.get(key);
-					if (!room.connections.contains(currentRoom)) {
-						room.connections.add(currentRoom);
-						currentRoom.connections.add(room);
-					}
+				} else {
+					RoomNode existingRoom = rooms.get(key);
+
+//					if (Objects.equals(existingRoom, start)) continue;
+
+					if (dir == Direction.NORTH && !existingRoom.northAllowed) continue;
+					else if (dir == Direction.EAST && !existingRoom.eastAllowed) continue;
+					else if (dir == Direction.SOUTH && !existingRoom.southAllowed) continue;
+					else if (dir == Direction.WEST && !existingRoom.westAllowed) continue;
+
+					if (dir == Direction.NORTH) {
+						if (Objects.equals(Pair.of(nx, nz), existingRoom.northConnectionPosition)) {
+							currentRoom.northConnection = existingRoom;
+							existingRoom.southConnection = currentRoom;
+						}
+					} else if (dir == Direction.EAST) {
+						if (Objects.equals(Pair.of(nx, nz), existingRoom.eastConnectionPosition)) {
+							currentRoom.eastConnection = existingRoom;
+							existingRoom.westConnection = currentRoom;
+						}
+					} else if (dir == Direction.SOUTH) {
+						if (Objects.equals(Pair.of(nx, nz), existingRoom.southConnectionPosition)) {
+							currentRoom.southConnection = existingRoom;
+							existingRoom.northConnection = currentRoom;
+						}
+					} else if (dir == Direction.WEST) {
+						if (Objects.equals(Pair.of(nx, nz), existingRoom.westConnectionPosition)) {
+							currentRoom.westConnection = existingRoom;
+							existingRoom.eastConnection = currentRoom;
+						}
+					} // set the connections
 				}
 			}
 		}
 
-		for (RoomNode room : rooms.values()) {
-			room.structureId = RoomNode.chooseStructure(room);
-		}
-
 		return rooms;
+
 	}
 
 //	Helpers -----------
 
-	private boolean onStartingRoom(Pair<Integer,Integer> key) {
-		return key.first >= -1 && key.first <= 1 &&
-			key.second >= -1 && key.second <= 1;
-	}
 	private List<Direction> shuffledDirections(long seed) {
 		Random random = new Random(seed);
 		List<Direction> dirs = new ArrayList<>(Arrays.asList(

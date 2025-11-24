@@ -27,7 +27,7 @@ public class DebugPortalBlock extends Block {
 			if (dimension != null) {
 				BlockPos spawn = new BlockPos(8, 150, 8);
 
-				dimension.getChunk(spawn.getX() >> 4, spawn.getZ() >> 4);
+				dimension.getChunk(spawn.getX() >> 4, spawn.getZ() >> 4); // floor div by 16 using 4 bit-shifts
 
 				player.getServer().execute(() ->
 					player.teleport(
