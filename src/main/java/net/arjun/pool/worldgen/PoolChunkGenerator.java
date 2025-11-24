@@ -59,7 +59,7 @@ public class PoolChunkGenerator extends ChunkGenerator {
 		for (int x = minX; x < maxX; x++) {
 			for (int z = minZ; z < maxZ; z++) {
 				chunk.setBlockState(
-					new BlockPos((chunkX*16)+x,y,(chunkZ*16)+z),
+					new BlockPos(x,y,z),
 					state,
 					false
 				);
@@ -100,12 +100,16 @@ public class PoolChunkGenerator extends ChunkGenerator {
 			if (!roomMap.containsKey(currentQuadrant)) continue;
 
 //			Test START
-			fillBlock(chunk, currentQuadrant.first*8+3, currentQuadrant.first*8+5, currentQuadrant.second*8+3, currentQuadrant.second*8+5, 20, chunkX, chunkZ, Blocks.SEA_LANTERN.getDefaultState());
+//			fillBlock(chunk, currentQuadrant.first*8+3, currentQuadrant.first*8+5, currentQuadrant.second*8+3, currentQuadrant.second*8+5, 20, chunkX, chunkZ, Blocks.SEA_LANTERN.getDefaultState());
+//			Test END
 
 			RoomNode room = roomMap.get(currentQuadrant);
 
-			int minX = room.gridX*8+3;
-			int minZ = room.gridZ*8+3;
+//			int minX = room.gridX*8+3;
+//			int minZ = room.gridZ*8+3;
+
+			int minX = currentQuadrant.first*8+3;
+			int minZ = currentQuadrant.second*8+3;
 
 			int maxX = minX+2;
 			int maxZ = minZ+2;
@@ -114,8 +118,10 @@ public class PoolChunkGenerator extends ChunkGenerator {
 
 			if (room.roomSize == RoomSize.START) {
 				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.REDSTONE_BLOCK.getDefaultState());
-			} else {
+			} else if (room.roomSize == RoomSize.R1x1) {
 				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.DIAMOND_BLOCK.getDefaultState());
+			} else if (room.roomSize == RoomSize.R2x2) {
+				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.GOLD_BLOCK.getDefaultState());
 			}
 
 			if (room.westConnection != null) fillBlock(chunk, minX-3, maxX-2, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
