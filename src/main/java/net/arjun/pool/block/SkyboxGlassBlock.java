@@ -36,4 +36,15 @@ public class SkyboxGlassBlock extends GlassBlock {
 		}
 		return state.getOutlineShape(world, pos);
 	}
+
+	@Override
+	public int getOpacity(BlockState state, BlockView world, BlockPos pos) {
+		return 0; // does not block skylight
+	}
+
+	@Override
+	public float getAmbientOcclusionLightLevel(BlockState state, BlockView world, BlockPos pos) {
+		return 1.0F; // full brightness, no dark shading
+	}
+
 }

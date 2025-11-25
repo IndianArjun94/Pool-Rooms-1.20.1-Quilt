@@ -36,7 +36,7 @@ public class PoolBlocks {
 			.build();
 
 	public static final Block LIGHT_LIMINAL_WINDOW = registerBlock("light_liminal_window",
-		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3).pistonBehavior(PistonBehavior.IGNORE)));
+		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3).pistonBehavior(PistonBehavior.IGNORE).nonOpaque()));
 
 	public static final Block POOL_BOOKSHELF = registerBlock("pool_bookshelf",
 		new Block(QuiltBlockSettings.copyOf(Blocks.CHISELED_BOOKSHELF)));
