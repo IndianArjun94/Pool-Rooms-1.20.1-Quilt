@@ -25,17 +25,17 @@ public class SkyboxGlassBlock extends GlassBlock {
 		return VoxelShapes.fullCube();
 	}
 
-	@Override
-	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos,
-										ShapeContext context) {
-		Entity entity = context instanceof EntityShapeContext esc ? esc.getEntity() : null;
-		if (entity instanceof PlayerEntity player) {
-			if (player.getAbilities().creativeMode && !player.isSpectator()) {
-				return VoxelShapes.empty();
-			}
-		}
-		return state.getOutlineShape(world, pos);
-	}
+//	@Override
+//	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos,
+//										ShapeContext context) {
+//		Entity entity = context instanceof EntityShapeContext esc ? esc.getEntity() : null;
+//		if (entity instanceof PlayerEntity player) {
+//			if (player.getAbilities().creativeMode && !player.isSpectator()) {
+//				return VoxelShapes.empty();
+//			}
+//		}
+//		return state.getOutlineShape(world, pos);
+//	}
 
 	@Override
 	public int getOpacity(BlockState state, BlockView world, BlockPos pos) {
