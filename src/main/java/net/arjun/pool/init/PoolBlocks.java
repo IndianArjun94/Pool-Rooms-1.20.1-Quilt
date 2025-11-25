@@ -1,9 +1,8 @@
 package net.arjun.pool.init;
 
 import net.arjun.pool.PoolRooms;
-import net.arjun.pool.block.DebugPortalBlock;
-import net.arjun.pool.block.SkyboxGlassBlock;
-import net.arjun.pool.block.CyanLightCubeBlock;
+import net.arjun.pool.block.*;
+import net.arjun.pool.block.TransparentBlock;
 import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
@@ -48,14 +47,14 @@ public class PoolBlocks {
 	public static final Block POOL_LEAVES = registerBlock("pool_leaves",
 		Blocks.createLeavesBlock(BlockSoundGroup.AZALEA_LEAVES));
 
-//	public static final Block POOL_PLANT = registerBlock("pool_plant",
-//		new FlowerBlock(StatusEffects.REGENERATION, 5, QuiltBlockSettings.copyOf(Blocks.DANDELION)));
-//
-//	public static final Block POTTED_POOL_PLANT = registerBlock("potted_pool_plant",
-//		new FlowerPotBlock(POOL_PLANT, QuiltBlockSettings.copyOf(Blocks.POTTED_DANDELION)));
-
 	public static final Block DEBUG_PORTAL = registerBlock("debug_portal",
 		new DebugPortalBlock(QuiltBlockSettings.copyOf(Blocks.STONE), PoolRooms.THE_LIBRARY_KEY));
+
+	public static final Block TRANSPARENT_BLOCK = registerBlock("transparent_block",
+		new TransparentBlock(QuiltBlockSettings.copyOf(Blocks.STONE)));
+
+	public static final Block TRANSLUCENT_BLOCK = registerBlock("translucent_block",
+		new TranslucentBlock(QuiltBlockSettings.copyOf(Blocks.STONE)));
 
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);

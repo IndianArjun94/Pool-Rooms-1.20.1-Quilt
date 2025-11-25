@@ -4,8 +4,11 @@ import net.arjun.pool.PoolRooms;
 import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.coderbot.iris.Iris;
+import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.util.ActionResult;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
@@ -42,6 +45,28 @@ public class PoolRoomsClient implements ClientModInitializer {
 			}
 		}
 
+		AttackBlockCallback.EVENT.register((player, world, hand, pos, direction) -> {
+			BlockState state = world.getBlockState(pos);
+
+			// Only affect your block
+			if (state.getBlock() != PoolBlocks.LIGHT_LIMINAL_WINDOW) return ActionResult.PASS;
+
+			// Creative or spectator → allow normal behavior
+			if (player.getAbilities().creativeMode || player.isSpectator()) return ActionResult.PASS;
+
+			// Survival player → cancel hit
+			return ActionResult.FAIL; // prevents client-side hit particles and break animation
+		});
+
+		BlockRenderLayerMap.put(
+			RenderLayer.getTranslucent(),
+			PoolBlocks.TRANSPARENT_BLOCK
+		);
+
+		BlockRenderLayerMap.put(
+			RenderLayer.getTranslucent(),
+			PoolBlocks.TRANSLUCENT_BLOCK
+		);
 	}
 
 }

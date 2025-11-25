@@ -9,5 +9,8 @@
 
   "block.pool.pool_leaves": "Pool Leaves",
 
-  "block.pool.debug_portal": "Debug Portal"
+  "block.pool.debug_portal": "Debug Portal",
+
+  "block.pool.transparent_block": "Transparent Block",
+  "block.pool.translucent_block": "Translucent Block"
 }

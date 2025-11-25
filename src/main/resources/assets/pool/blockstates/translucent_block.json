@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "pool:block/translucent_block"
+    }
+  }
+}
