@@ -44,7 +44,7 @@ public class PoolWorldState extends PersistentState {
 		Random random = new Random(seed);
 
 		Map<Pair<Integer,Integer>,RoomNode> rooms = new HashMap<>(); // all rooms and their positions
-		Queue<RoomNode> frontier = new LinkedList<>(); // rooms that need to generate entrances
+		Deque<RoomNode> frontier = new LinkedList<>(); // rooms that need to generate entrances
 
 		RoomNode start = new RoomNode(-1,-1,3,3,RoomSize.START);
 		start.northConnectionPosition = Pair.of(start.gridX+1, start.gridZ);
@@ -109,6 +109,7 @@ public class PoolWorldState extends PersistentState {
 						newRoom.westConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ);
 						newRoom.eastConnectionPosition = Pair.of(newRoom.gridX+newRoom.gridLengthX-1, newRoom.gridZ);
 						newRoom.southConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ+newRoom.gridLengthZ-1);
+						newRoom.generationDirection = dir;
 
 						if (dir == Direction.NORTH) {
 							currentRoom.northConnection = newRoom;
@@ -138,6 +139,8 @@ public class PoolWorldState extends PersistentState {
 
 							RoomNode newRoom = new RoomNode(gridX,gridZ,lengthX,lengthZ,RoomSize.R2x2);
 
+							newRoom.generationDirection = dir;
+
 							newRoom.eastAllowed = false;
 							newRoom.westAllowed = false;
 
@@ -149,7 +152,7 @@ public class PoolWorldState extends PersistentState {
 									rooms.put(Pair.of(x,z), newRoom);
 								}
 							}
-							frontier.add(newRoom);
+							frontier.addFirst(newRoom);
 
 							currentRoom.southConnection = newRoom;
 							newRoom.northConnection = currentRoom;
@@ -164,6 +167,8 @@ public class PoolWorldState extends PersistentState {
 
 							RoomNode newRoom = new RoomNode(gridX,gridZ,lengthX,lengthZ,RoomSize.R2x2);
 
+							newRoom.generationDirection = dir;
+
 							newRoom.northAllowed = false;
 							newRoom.southAllowed = false;
 
@@ -175,7 +180,7 @@ public class PoolWorldState extends PersistentState {
 									rooms.put(Pair.of(x,z), newRoom);
 								}
 							}
-							frontier.add(newRoom);
+							frontier.addFirst(newRoom);
 
 							currentRoom.eastConnection = newRoom;
 							newRoom.westConnection = currentRoom;
@@ -190,6 +195,8 @@ public class PoolWorldState extends PersistentState {
 
 							RoomNode newRoom = new RoomNode(gridX,gridZ,lengthX,lengthZ,RoomSize.R2x2);
 
+							newRoom.generationDirection = dir;
+
 							newRoom.eastAllowed = false;
 							newRoom.westAllowed = false;
 
@@ -201,7 +208,7 @@ public class PoolWorldState extends PersistentState {
 									rooms.put(Pair.of(x,z), newRoom);
 								}
 							}
-							frontier.add(newRoom);
+							frontier.addFirst(newRoom);
 
 							currentRoom.northConnection = newRoom;
 							newRoom.southConnection = currentRoom;
@@ -216,6 +223,8 @@ public class PoolWorldState extends PersistentState {
 
 							RoomNode newRoom = new RoomNode(gridX,gridZ,lengthX,lengthZ,RoomSize.R2x2);
 
+							newRoom.generationDirection = dir;
+
 							newRoom.northAllowed = false;
 							newRoom.southAllowed = false;
 
@@ -227,7 +236,7 @@ public class PoolWorldState extends PersistentState {
 									rooms.put(Pair.of(x,z), newRoom);
 								}
 							}
-							frontier.add(newRoom);
+							frontier.addFirst(newRoom);
 							currentRoom.westConnection = newRoom;
 							newRoom.eastConnection = currentRoom;
 						}
@@ -264,6 +273,10 @@ public class PoolWorldState extends PersistentState {
 					} // set the connections
 				}
 			}
+		}
+
+		for (RoomNode room : rooms.values()) {
+			room.structureId = RoomNode.chooseStructure(room);
 		}
 
 		return rooms;

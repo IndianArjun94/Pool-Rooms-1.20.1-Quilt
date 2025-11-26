@@ -22,7 +22,7 @@ public class PoolRoomsClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient(ModContainer mod) {
 		BlockRenderLayerMap
-			.put(RenderLayer.getTranslucent(), PoolBlocks.LIGHT_LIMINAL_WINDOW);
+			.put(RenderLayer.getTranslucent(), PoolBlocks.LIGHT_LIMINAL_WINDOW,PoolBlocks.TRANSPARENT_BLOCK,PoolBlocks.TRANSLUCENT_BLOCK);
 
 		try {
 			if (QuiltLoader.isModLoaded("iris")) {
@@ -57,16 +57,6 @@ public class PoolRoomsClient implements ClientModInitializer {
 			// Survival player → cancel hit
 			return ActionResult.FAIL; // prevents client-side hit particles and break animation
 		});
-
-		BlockRenderLayerMap.put(
-			RenderLayer.getTranslucent(),
-			PoolBlocks.TRANSPARENT_BLOCK
-		);
-
-		BlockRenderLayerMap.put(
-			RenderLayer.getTranslucent(),
-			PoolBlocks.TRANSLUCENT_BLOCK
-		);
 	}
 
 }

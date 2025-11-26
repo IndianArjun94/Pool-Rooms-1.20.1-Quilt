@@ -67,11 +67,11 @@ dependencies {
 
 	modCompileOnly("maven.modrinth:sodium:mc1.20.1-0.5.3-fabric") // works
 	modCompileOnly("maven.modrinth:iris:1.6.11+1.20.1") // works
+	modCompileOnly("maven.modrinth:effective:2.2.0+1.20.1")
 
 //	modRuntimeOnly("maven.modrinth:sodium:mc1.20.1-0.5.13-fabric")
 //	modRuntimeOnly("maven.modrinth:iris:1.7.6+1.20.1")
 
-//	includeMod libs.ludocrypt.limlib
 	includeMod libs.ludocrypt.specialmodels
 }
 

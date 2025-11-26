@@ -1,3 +1,4 @@
+
 package net.arjun.pool.client.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -30,7 +31,7 @@ public class SkyboxRenderer extends SpecialModelRenderer {
 	@Override
 	@ClientOnly
 	public void setup(MatrixStack matrices, Matrix4f viewMatrix, Matrix4f positionMatrix, float tickDelta,
-			ShaderProgram shader, BlockPos origin) {
+					  ShaderProgram shader, BlockPos origin) {
 
 		for (int i = 0; i < 6; i++) {
 			RenderSystem.setShaderTexture(i, PoolRooms.id("textures/sky/" + id + "_" + i + ".png"));
@@ -62,7 +63,7 @@ public class SkyboxRenderer extends SpecialModelRenderer {
 	@Override
 	@ClientOnly
 	public MutableQuad modifyQuad(ChunkRenderRegion chunkRenderRegion, BlockPos pos, BlockState state, BakedModel model,
-			BakedQuad quadIn, long modelSeed, MutableQuad quad) {
+								  BakedQuad quadIn, long modelSeed, MutableQuad quad) {
 		quad.getV1().setUv(new Vec2f(0.0F, 0.0F));
 		quad.getV2().setUv(new Vec2f(0.0F, 1.0F));
 		quad.getV3().setUv(new Vec2f(1.0F, 1.0F));

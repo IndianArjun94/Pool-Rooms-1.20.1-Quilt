@@ -99,35 +99,52 @@ public class PoolChunkGenerator extends ChunkGenerator {
 
 			if (!roomMap.containsKey(currentQuadrant)) continue;
 
-//			Test START
-//			fillBlock(chunk, currentQuadrant.first*8+3, currentQuadrant.first*8+5, currentQuadrant.second*8+3, currentQuadrant.second*8+5, 20, chunkX, chunkZ, Blocks.SEA_LANTERN.getDefaultState());
-//			Test END
-
 			RoomNode room = roomMap.get(currentQuadrant);
 
-//			int minX = room.gridX*8+3;
-//			int minZ = room.gridZ*8+3;
+			int x = room.gridX*8;
+			int z = room.gridZ*8;
 
-			int minX = currentQuadrant.first*8+3;
-			int minZ = currentQuadrant.second*8+3;
+			StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
+			Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, room.structureId));
 
-			int maxX = minX+2;
-			int maxZ = minZ+2;
+			StructurePlacementData placementData = new StructurePlacementData()
+				.setRotation(BlockRotation.NONE)
+				.setMirror(BlockMirror.NONE)
+				.setIgnoreEntities(true);
 
-			int y = 10;
+			if (!_structure.isPresent()) return;
 
-			if (room.roomSize == RoomSize.START) {
-				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.REDSTONE_BLOCK.getDefaultState());
-			} else if (room.roomSize == RoomSize.R1x1) {
-				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.DIAMOND_BLOCK.getDefaultState());
-			} else if (room.roomSize == RoomSize.R2x2) {
-				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.GOLD_BLOCK.getDefaultState());
-			}
+			Structure structure = _structure.get();
 
-			if (room.westConnection != null) fillBlock(chunk, minX-3, maxX-2, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
-			if (room.eastConnection != null) fillBlock(chunk, minX+2, maxX+3, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
-			if (room.southConnection != null) fillBlock(chunk, minX, maxX, minZ+2, maxZ+3, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
-			if (room.northConnection != null) fillBlock(chunk, minX, maxX, minZ-3, maxZ-2, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+			structure.place(world,
+				new BlockPos(x,48,z),
+				new BlockPos(0, 0, 0),
+				placementData,
+				world.getRandom(),
+				0);
+//
+//			int minX = currentQuadrant.first*8+3;
+//			int minZ = currentQuadrant.second*8+3;
+//
+//			int maxX = minX+2;
+//			int maxZ = minZ+2;
+//
+//			int y = 10;
+//
+//			if (room.roomSize == RoomSize.START) {
+//				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.REDSTONE_BLOCK.getDefaultState());
+//			} else if (room.roomSize == RoomSize.R1x1) {
+//				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.DIAMOND_BLOCK.getDefaultState());
+//			} else if (room.roomSize == RoomSize.R2x2) {
+//				fillBlock(chunk, minX, maxX, minZ, maxZ, y, chunkX, chunkZ, Blocks.GOLD_BLOCK.getDefaultState());
+//			}
+//
+//			if (room.westConnection != null) fillBlock(chunk, minX-3, maxX-2, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+//			if (room.eastConnection != null) fillBlock(chunk, minX+2, maxX+3, minZ, maxZ, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+//			if (room.southConnection != null) fillBlock(chunk, minX, maxX, minZ+2, maxZ+3, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+//			if (room.northConnection != null) fillBlock(chunk, minX, maxX, minZ-3, maxZ-2, y, chunkX, chunkZ, PoolBlocks.POOL_TILES.getDefaultState());
+
+
 		}
 
 //		if (roomMap.containsKey(chunkPos) && !(chunkX >= -1 && chunkX <= 1 && chunkZ >= -1 && chunkZ <= 1)) {

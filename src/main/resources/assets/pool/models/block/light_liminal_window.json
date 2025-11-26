@@ -1,5 +1,5 @@
 {
-	"parent": "pool:block/transparent_block",
+	"parent": "minecraft:block/air",
 	"specialmodels": {
 		"pool:light_skybox": "pool:shader/light_liminal_window"
 	}
