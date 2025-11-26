@@ -107,6 +107,37 @@ public class PoolChunkGenerator extends ChunkGenerator {
 			StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
 			Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, room.structureId));
 
+			if (room.roomSize == RoomSize.START) {
+				Optional<Structure> _structure2 = manager.getStructure(new Identifier(PoolRooms.MOD_ID, "start_top"));
+
+				StructurePlacementData placementData = new StructurePlacementData()
+					.setRotation(BlockRotation.NONE)
+					.setMirror(BlockMirror.NONE)
+					.setIgnoreEntities(true);
+
+				if (!_structure.isPresent()) return;
+				if (!_structure2.isPresent()) return;
+
+				Structure structure = _structure.get();
+				Structure structure2 = _structure2.get();
+
+				structure.place(world,
+					new BlockPos(x,48,z),
+					new BlockPos(0, 0, 0),
+					placementData,
+					world.getRandom(),
+					0);
+
+				structure2.place(world,
+					new BlockPos(x,96,z),
+					new BlockPos(0, 0, 0),
+					placementData,
+					world.getRandom(),
+					0);
+
+				continue;
+			}
+
 			StructurePlacementData placementData = new StructurePlacementData()
 				.setRotation(BlockRotation.NONE)
 				.setMirror(BlockMirror.NONE)

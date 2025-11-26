@@ -100,6 +100,8 @@ public class RoomNode {
 			} else if (c == 2) {
 				return "2x2_straight_" + dirName(room.generationDirection);
 			}
+		} else if (room.roomSize == RoomSize.START) {
+			return "start";
 		}
 
 		return "empty";
