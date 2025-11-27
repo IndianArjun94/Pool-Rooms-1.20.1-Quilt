@@ -1,10 +1,6 @@
 package net.arjun.pool.init;
 
 import net.arjun.pool.PoolRooms;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
 
 public class PoolBlockEntities {
 
@@ -17,7 +13,7 @@ public class PoolBlockEntities {
 //					.build(null)
 //			);
 
-    public static void registerBlockEntities() {
+    public static void init() {
         PoolRooms.LOGGER.info("Registering Block Entities for " + PoolRooms.MOD_NAME);
     }
 }

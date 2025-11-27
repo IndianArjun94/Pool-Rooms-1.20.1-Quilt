@@ -40,6 +40,8 @@ public class PoolWorldState extends PersistentState {
 
 	public Map<Pair<Integer,Integer>,RoomNode> generateRooms(long seed) {
 		final int roomsToGenerate = 20000;
+		int roomsCount = 0;
+		int counter = 1;
 
 		Random random = new Random(seed);
 
@@ -52,6 +54,7 @@ public class PoolWorldState extends PersistentState {
 		start.eastConnectionPosition = Pair.of(start.gridX+start.gridLengthX-1, start.gridZ+1);
 		start.southConnectionPosition = Pair.of(start.gridX+1, start.gridZ+start.gridLengthZ-1);
 		frontier.add(start);
+		roomsCount++;
 
 //		CODE TO ADD A ROOM ------------------------------------------
 		for (int x = start.gridX; x < start.gridX + start.gridLengthX; x++) {
@@ -61,11 +64,11 @@ public class PoolWorldState extends PersistentState {
 		}
 //		-------------------------------------------------------------
 
-		while (!frontier.isEmpty() && rooms.size() < roomsToGenerate) {
+		while (!frontier.isEmpty() && roomsCount < roomsToGenerate) {
 			RoomNode currentRoom = frontier.poll(); // we need to generate more rooms from this room (branches)
-			int branchesToGenerate = random.nextInt(0,3)+1; // generate 1-3 branches per room
+			int branchesToGenerate = random.nextInt(0,2)+1; // generate 1-3 branches per room
 			if (currentRoom == start) branchesToGenerate = 4; // if this is the starting room, generate 4 branches
-			List<Direction> dirs = shuffledDirections(random.nextLong());
+			List<Direction> dirs = shuffledDirections(random.nextLong(), oppositeOf(currentRoom.generationDirection));
 
 			for (int i = 0; i < branchesToGenerate; i++) {
 				Direction dir = dirs.get(i);
@@ -101,9 +104,9 @@ public class PoolWorldState extends PersistentState {
 				Pair<Integer,Integer> key = Pair.of(nx,nz);
 
 				if (!rooms.containsKey(key)) { // we can generate a new room here
-					int roomType = random.nextInt(0,20);
+//					int roomType = random.nextInt(0,20);
 
-					if (roomType != 19) { // 0, 1, 2, or 3 forms a 1x1 room
+					if (counter % 20 != 0) { // 0, 1, 2, or 3 forms a 1x1 room
 						RoomNode newRoom = new RoomNode(nx,nz,1,1,RoomSize.R1x1);
 						newRoom.northConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ);
 						newRoom.westConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ);
@@ -127,6 +130,7 @@ public class PoolWorldState extends PersistentState {
 
 						rooms.put(Pair.of(newRoom.gridX,newRoom.gridZ), newRoom);
 						frontier.add(newRoom);
+						roomsCount++;
 					} else { // 4 makes a 2x2 room
 						if (dir == Direction.SOUTH) {
 							int gridX = nx;
@@ -240,6 +244,8 @@ public class PoolWorldState extends PersistentState {
 							currentRoom.westConnection = newRoom;
 							newRoom.eastConnection = currentRoom;
 						}
+
+						roomsCount++;
 					}
 
 				} else {
@@ -273,6 +279,8 @@ public class PoolWorldState extends PersistentState {
 					} // set the connections
 				}
 			}
+
+			counter++;
 		}
 
 		for (RoomNode room : rooms.values()) {
@@ -293,14 +301,20 @@ public class PoolWorldState extends PersistentState {
 
 		return true;
 	}
-	private List<Direction> shuffledDirections(long seed) {
+	private List<Direction> shuffledDirections(long seed, Direction exclude) {
 		Random random = new Random(seed);
+
 		List<Direction> dirs = new ArrayList<>(Arrays.asList(
 			Direction.NORTH,
 			Direction.EAST,
 			Direction.SOUTH,
 			Direction.WEST
 		));
+
+		if (exclude != null) {
+			dirs.remove(exclude);
+		}
+
 		Collections.shuffle(dirs, random);
 		return dirs;
 	}
@@ -321,5 +335,12 @@ public class PoolWorldState extends PersistentState {
 		} else {
 			return 1;
 		}
+	}
+	private Direction oppositeOf(Direction dir) {
+		if (dir == Direction.NORTH) return Direction.SOUTH;
+		if (dir == Direction.EAST) return Direction.WEST;
+		if (dir == Direction.SOUTH) return Direction.NORTH;
+		if (dir == Direction.WEST) return Direction.EAST;
+		return null;
 	}
 }

@@ -5,24 +5,21 @@ import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.arjun.pool.init.PoolModelRenderers;
 import net.arjun.pool.worldgen.PoolChunkGenerator;
-import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.ActionResult;
+import net.arjun.pool.worldgen.PoolWorldState;
 import net.minecraft.world.World;
-import org.quiltmc.qsl.lifecycle.api.event.ServerLifecycleEvents;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PoolRooms implements ModInitializer {
 	// This logger is used to write text to the console and the log file.
@@ -47,14 +44,11 @@ public class PoolRooms implements ModInitializer {
 
 		MOD_NAME = mod.metadata().name();
 
-
 		PoolBlocks.init();
-		PoolBlockEntities.registerBlockEntities();
+		PoolBlockEntities.init();
 		PoolModelRenderers.init();
 
 		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
-
-
 	}
 
 	public static Identifier id(String id) {
