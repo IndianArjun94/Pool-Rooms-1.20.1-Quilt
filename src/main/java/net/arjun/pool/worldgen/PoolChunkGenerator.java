@@ -3,12 +3,8 @@ package net.arjun.pool.worldgen;
 import com.ibm.icu.impl.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import com.sun.jdi.Mirror;
 import net.arjun.pool.PoolRooms;
-import net.arjun.pool.init.PoolBlocks;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.data.client.model.VariantSettings;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.Structure;
 import net.minecraft.structure.StructureManager;
@@ -18,7 +14,6 @@ import net.minecraft.util.BlockMirror;
 import net.minecraft.util.BlockRotation;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.random.RandomGenerator;
 import net.minecraft.world.ChunkRegion;
 import net.minecraft.world.HeightLimitView;
 import net.minecraft.world.Heightmap;
@@ -81,8 +76,14 @@ public class PoolChunkGenerator extends ChunkGenerator {
 			return; // fail-safe
 		} // checks and loads
 
-		PoolWorldState pws = PoolWorldState.get(serverWorld);
-		Map<Pair<Integer,Integer>, RoomNode> roomMap = pws.generateRooms(pws.seed);
+
+		Map<Pair<Integer, Integer>, RoomNode> roomMap = PoolRooms.currentMap;
+
+		if (PoolRooms.currentMap == null) {
+			if (PoolWorldState.instance == null) PoolWorldState.get(serverWorld);
+			roomMap = PoolWorldState.instance.generateNewMap();
+			System.out.println("PoolChunkGenerator: making new PWS & map");
+		}
 
 		int chunkX = chunk.getPos().x;
 		int chunkZ = chunk.getPos().z;

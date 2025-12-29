@@ -1,7 +1,13 @@
 {
   "variants": {
-    "": {
-      "model": "pool:block/translucent_block"
+    "transparency=25": {
+      "model": "pool:block/translucent_block_25"
+    },
+    "transparency=50": {
+      "model": "pool:block/translucent_block_50"
+    },
+    "transparency=75": {
+      "model": "pool:block/translucent_block_75"
     }
   }
 }

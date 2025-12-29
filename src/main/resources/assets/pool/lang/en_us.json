@@ -12,5 +12,7 @@
   "block.pool.debug_portal": "Debug Portal",
 
   "block.pool.transparent_block": "Transparent Block",
-  "block.pool.translucent_block": "Translucent Block"
+  "block.pool.translucent_block": "Translucent Block",
+
+  "block.pool.skybox_mask_block": "Skybox Mask"
 }

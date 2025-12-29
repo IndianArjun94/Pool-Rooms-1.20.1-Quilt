@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
 import net.minecraft.block.piston.PistonBehavior;
+import net.minecraft.client.render.GameRenderer;
 import net.minecraft.data.family.BlockFamily;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffects;
@@ -54,7 +55,10 @@ public class PoolBlocks {
 		new TransparentBlock(QuiltBlockSettings.copyOf(Blocks.STONE)));
 
 	public static final Block TRANSLUCENT_BLOCK = registerBlock("translucent_block",
-		new TranslucentBlock(QuiltBlockSettings.copyOf(Blocks.STONE)));
+		new TranslucentBlock(QuiltBlockSettings.copyOf(Blocks.CYAN_STAINED_GLASS).nonOpaque().allowsSpawning(Blocks::never).solidBlock(Blocks::never).suffocates(Blocks::never).blockVision(Blocks::never)));
+
+	public static final Block SKYBOX_MASK_BLOCK = registerBlock("skybox_mask_block",
+		new SkyboxMaskBlock(QuiltBlockSettings.copyOf(Blocks.SEA_LANTERN)));
 
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);
