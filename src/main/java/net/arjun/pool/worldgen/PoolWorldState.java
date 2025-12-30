@@ -50,6 +50,7 @@ public class PoolWorldState extends PersistentState {
 
 		System.out.println("PWS: generating rooms");
 
+//		Starting Room (firstTime, not firstTime)
 		if (!firstTime) pastFirstTime = true;
 
 		final int roomsToGenerate = 2000;
@@ -118,85 +119,63 @@ public class PoolWorldState extends PersistentState {
 
 		while (!frontier.isEmpty() && roomsCount < roomsToGenerate) {
 			RoomNode currentRoom = frontier.poll(); // we need to generate more rooms from this room (branches)
-			int branchesToGenerate = random.nextInt(0,2)+1; // generate 1-3 branches per room
+			int branchesToGenerate = random.nextInt(0,2)+1; // generate 1-2 branches per room
 			if (currentRoom == start) branchesToGenerate = 4; // if this is the starting room, generate 4 branches
 			List<Direction> dirs = shuffledDirections(random.nextLong(), oppositeOf(currentRoom.generationDirection));
 
+//			Loop through all directions
 			for (int i = 0; i < branchesToGenerate; i++) {
 				Direction dir = dirs.get(i);
-				if (dir == Direction.NORTH) if (!currentRoom.northAllowed) continue;
-				if (dir == Direction.EAST) if (!currentRoom.eastAllowed) continue;
-				if (dir == Direction.SOUTH) if (!currentRoom.southAllowed) continue;
-				if (dir == Direction.WEST) if (!currentRoom.westAllowed) continue;
+
+//				If we are not allowed to go in a direction from currentRoom, continue
+				if (dir == Direction.NORTH && !currentRoom.northAllowed) continue;
+				if (dir == Direction.EAST && !currentRoom.eastAllowed) continue;
+				if (dir == Direction.SOUTH && !currentRoom.southAllowed) continue;
+				if (dir == Direction.WEST && !currentRoom.westAllowed) continue;
 
 				int nx = currentRoom.gridX;
 				int nz = currentRoom.gridZ;
 
-				// We assume the NEW room is 1x1.
-				// If new rooms can be larger, you must account for newRoom.width in the subtraction logic.
-				boolean choseDirDone = false;
-				int iterations = 0;
+				boolean chosenDir = false;
 
-				while (!choseDirDone) {
+				while (!chosenDir) {
 					switch (dir) {
 						case NORTH:
 							nx = currentRoom.northConnectionPosition.first;
 							nz = currentRoom.northConnectionPosition.second - 1;
-							if (rooms.containsKey(Pair.of(nx, nz))) {
-								if (connectionCount(rooms.get(Pair.of(nx, nz))) == 3) {
-									if (getOtherDir(dir, currentRoom) != null) dir = getOtherDir(dir,currentRoom); else continue;
-									break;
-								}
-							}
-							choseDirDone = true;
 							break;
 						case SOUTH:
 							nx = currentRoom.southConnectionPosition.first; // Move past the bottom edge
 							nz = currentRoom.southConnectionPosition.second + 1;
-							if (rooms.containsKey(Pair.of(nx, nz))) {
-								if (connectionCount(rooms.get(Pair.of(nx, nz))) == 3) {
-									if (getOtherDir(dir, currentRoom) != null) dir = getOtherDir(dir,currentRoom); else continue;
-									break;
-								}
-							}
-							choseDirDone = true;
 							break;
 						case WEST:
 							nx = currentRoom.westConnectionPosition.first - 1;
 							nz = currentRoom.westConnectionPosition.second;
-							if (rooms.containsKey(Pair.of(nx, nz))) {
-								if (connectionCount(rooms.get(Pair.of(nx, nz))) == 3) {
-									if (getOtherDir(dir, currentRoom) != null) dir = getOtherDir(dir,currentRoom); else continue;
-									break;
-								}
-							}
-							choseDirDone = true;
 							break;
 						case EAST:
 							nx = currentRoom.eastConnectionPosition.first + 1;
 							nz = currentRoom.eastConnectionPosition.second;
-							if (rooms.containsKey(Pair.of(nx, nz))) {
-								if (connectionCount(rooms.get(Pair.of(nx, nz))) == 3) {
-									if (getOtherDir(dir, currentRoom) != null) dir = getOtherDir(dir,currentRoom); else continue;
-									break;
-								}
-							}
-							choseDirDone = true;
 							break;
 					}
-					iterations++;
-					if (iterations > 5) {
-						break;
+
+					if (rooms.containsKey(Pair.of(nx, nz))) { // if we stumbled upon a room
+						if (connectionCount(rooms.get(Pair.of(nx, nz))) >= 3) { // if this room has 3 or more connections already
+							if (getOtherDir(dir, currentRoom) != null) { // if there are other directions we can go to
+								dir = getOtherDir(dir, currentRoom);
+							} else {
+								break;
+							}
+						}
 					}
+
+					chosenDir = true;
 				}
 
-				if (!choseDirDone) continue;
+				if (!chosenDir) continue;
 
 				Pair<Integer,Integer> key = Pair.of(nx,nz);
 
 				if (!rooms.containsKey(key)) { // we can generate a new room here
-//					int roomType = random.nextInt(0,20);
-
 					if (counter % 10 != 0) { // 0, 1, 2, or 3 forms a 1x1 room
 						RoomNode newRoom = new RoomNode(nx,nz,1,1,RoomSize.R1x1);
 						newRoom.northConnectionPosition = Pair.of(newRoom.gridX, newRoom.gridZ);
@@ -343,16 +322,10 @@ public class PoolWorldState extends PersistentState {
 
 						}
 					}
-
 				} else {
 					RoomNode existingRoom = rooms.get(key);
 
-					if (dir == Direction.NORTH && !existingRoom.northAllowed) continue;
-					else if (dir == Direction.EAST && !existingRoom.eastAllowed) continue;
-					else if (dir == Direction.SOUTH && !existingRoom.southAllowed) continue;
-					else if (dir == Direction.WEST && !existingRoom.westAllowed) continue;
-
-					if (connectionCount(existingRoom) >= 3) continue;
+					if (connectionCount(existingRoom) >= 3) continue; // room we found
 					if (connectionCount(currentRoom) >= 3) continue;
 
 					if (dir == Direction.NORTH) {
@@ -375,17 +348,19 @@ public class PoolWorldState extends PersistentState {
 							currentRoom.westConnection = existingRoom;
 							existingRoom.eastConnection = currentRoom;
 						}
-					} // set the connections
+					}
 				}
 			}
 
 			counter++;
 		}
 
+//		Room IDs
 		for (RoomNode room : rooms.values()) {
 			room.structureId = RoomNode.chooseStructure(room);
 		}
 
+//		Saving the new map
 		PoolRooms.currentMap = rooms;
 
 		System.out.println("PWS: finished generating");
