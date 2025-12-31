@@ -3,14 +3,10 @@ package net.arjun.pool.init;
 import net.arjun.pool.PoolRooms;
 import net.arjun.pool.block.*;
 import net.arjun.pool.block.TransparentBlock;
-import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
+import net.arjun.pool.block.SkyboxPanelBlock;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.*;
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.client.render.GameRenderer;
 import net.minecraft.data.family.BlockFamily;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
@@ -22,13 +18,13 @@ import org.quiltmc.qsl.block.extensions.api.QuiltBlockSettings;
 public class PoolBlocks {
 
 	public static final Block POOL_TILES = registerBlock("pool_tiles",
-		new Block(AbstractBlock.Settings.create().strength(2f).sounds(BlockSoundGroup.STONE)));
+		new Block(AbstractBlock.Settings.create().strength(99999,99999).sounds(BlockSoundGroup.STONE)));
 
 	public static final Block POOL_TILE_STAIRS = registerBlock("pool_tile_stairs",
-		new StairsBlock(PoolBlocks.POOL_TILES.getDefaultState(), AbstractBlock.Settings.create().strength(2f).sounds(BlockSoundGroup.STONE)));
+		new StairsBlock(PoolBlocks.POOL_TILES.getDefaultState(), AbstractBlock.Settings.create().strength(99999,99999).sounds(BlockSoundGroup.STONE)));
 
 	public static final Block POOL_TILE_SLAB = registerBlock("pool_tile_slab",
-		new SlabBlock(AbstractBlock.Settings.create().strength(2f).sounds(BlockSoundGroup.STONE)));
+		new SlabBlock(AbstractBlock.Settings.create().strength(99999,99999).sounds(BlockSoundGroup.STONE)));
 
 	public static final BlockFamily POOL_TILES_FAMILY =
 		new BlockFamily.Builder(PoolBlocks.POOL_TILES)
@@ -37,7 +33,7 @@ public class PoolBlocks {
 			.build();
 
 	public static final Block LIGHT_LIMINAL_WINDOW = registerBlock("light_liminal_window",
-		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3)));
+		new SkyboxGlassBlock(QuiltBlockSettings.copyOf(Blocks.GLASS).luminance(3).strength(99999,999999)));
 
 	public static final Block POOL_BOOKSHELF = registerBlock("pool_bookshelf",
 		new Block(QuiltBlockSettings.copyOf(Blocks.CHISELED_BOOKSHELF)));
@@ -59,6 +55,12 @@ public class PoolBlocks {
 
 	public static final Block SKYBOX_MASK_BLOCK = registerBlock("skybox_mask_block",
 		new SkyboxMaskBlock(QuiltBlockSettings.copyOf(Blocks.SEA_LANTERN)));
+
+	public static final Block LIGHT_LIMINAL_PANEL = registerBlock("light_liminal_panel",
+		new SkyboxPanelBlock(QuiltBlockSettings.copyOf(Blocks.GLASS)
+			.nonOpaque()
+			.luminance(3)
+			.sounds(BlockSoundGroup.GLASS).strength(99999,999999)));
 
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);

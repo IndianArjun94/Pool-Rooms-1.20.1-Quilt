@@ -1,14 +1,18 @@
 package net.arjun.pool.client;
 
 import net.arjun.pool.PoolRooms;
+import net.arjun.pool.client.render.SkyboxRenderer;
 import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.coderbot.iris.Iris;
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.ludocrypt.specialmodels.api.SpecialModelRenderer;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.ActionResult;
+import net.minecraft.util.Identifier;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.loader.api.QuiltLoader;
 import org.quiltmc.qsl.base.api.entrypoint.client.ClientModInitializer;
@@ -22,7 +26,7 @@ public class PoolRoomsClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient(ModContainer mod) {
 		BlockRenderLayerMap
-			.put(RenderLayer.getTranslucent(), PoolBlocks.LIGHT_LIMINAL_WINDOW,PoolBlocks.TRANSPARENT_BLOCK,PoolBlocks.TRANSLUCENT_BLOCK);
+			.put(RenderLayer.getTranslucent(), PoolBlocks.LIGHT_LIMINAL_WINDOW,PoolBlocks.LIGHT_LIMINAL_PANEL,PoolBlocks.TRANSPARENT_BLOCK,PoolBlocks.TRANSLUCENT_BLOCK);
 
 		try {
 			if (QuiltLoader.isModLoaded("iris")) {
@@ -40,7 +44,7 @@ public class PoolRoomsClient implements ClientModInitializer {
 					Iris.getIrisConfig().save();
 					Iris.reload();
 				}
-			} catch (Exception alsoIgnored_SSSIIIXXSEEVVVEEENPranavKurupatiIsSkibidi) {
+			} catch (Exception e) {
 				PoolRooms.LOGGER.error("Could not load \"" + SHADERPACK_NAME + ".zip\" shaderpack automatically, you can try to load it manually though!");
 			}
 		}
@@ -49,7 +53,7 @@ public class PoolRoomsClient implements ClientModInitializer {
 			BlockState state = world.getBlockState(pos);
 
 			// Only affect your block
-			if (state.getBlock() != PoolBlocks.LIGHT_LIMINAL_WINDOW) return ActionResult.PASS;
+			if (state.getBlock() != PoolBlocks.LIGHT_LIMINAL_WINDOW && state.getBlock() != PoolBlocks.LIGHT_LIMINAL_PANEL) return ActionResult.PASS;
 
 			// Creative or spectator → allow normal behavior
 			if (player.getAbilities().creativeMode || player.isSpectator()) return ActionResult.PASS;

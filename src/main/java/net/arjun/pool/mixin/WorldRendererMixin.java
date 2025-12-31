@@ -20,7 +20,7 @@ public class WorldRendererMixin {
 		cancellable = true
 	)
 	private void skipOutline(MatrixStack matrices, VertexConsumer consumer, Entity entity, double offsetX, double offsetY, double offsetZ, BlockPos blockPos, BlockState blockState, CallbackInfo ci) {
-		if (blockState.isOf(PoolBlocks.LIGHT_LIMINAL_WINDOW)) {
+		if (blockState.isOf(PoolBlocks.LIGHT_LIMINAL_WINDOW) || blockState.isOf(PoolBlocks.LIGHT_LIMINAL_PANEL)) {
 			ci.cancel();
 		}
 	}

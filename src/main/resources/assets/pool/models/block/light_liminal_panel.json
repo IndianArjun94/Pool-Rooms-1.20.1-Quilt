@@ -1,0 +1,6 @@
+{
+  "ambientocclusion": false,
+  "specialmodels": {
+    "pool:light_skybox": "pool:shader/light_liminal_panel"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "pool:block/light_liminal_panel",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "pool:block/light_liminal_panel",
+      "x": 90,
+      "y": 90
+    },
+    "facing=north": {
+      "model": "pool:block/light_liminal_panel",
+      "x": 90
+    },
+    "facing=south": {
+      "model": "pool:block/light_liminal_panel",
+      "x": 90,
+      "y": 180
+    },
+    "facing=up": {
+      "model": "pool:block/light_liminal_panel"
+    },
+    "facing=west": {
+      "model": "pool:block/light_liminal_panel",
+      "x": 90,
+      "y": 270
+    }
+  }
+}

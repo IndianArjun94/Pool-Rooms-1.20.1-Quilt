@@ -53,7 +53,7 @@ public class PoolWorldState extends PersistentState {
 //		Starting Room (firstTime, not firstTime)
 		if (!firstTime) pastFirstTime = true;
 
-		final int roomsToGenerate = 2000;
+		final int roomsToGenerate = 10000;
 		int roomsCount = 0;
 		int counter = 1;
 
