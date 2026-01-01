@@ -16,6 +16,9 @@ import net.minecraft.util.BlockRotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -24,6 +27,7 @@ import net.minecraft.world.WorldView;
 
 public class SkyboxPanelBlock extends Block {
 	public static final DirectionProperty FACING = Properties.FACING;
+	public static final BooleanProperty LIT = BooleanProperty.of("lit");
 	protected static final VoxelShape UP_SHAPE = Block.createCuboidShape(0.0D, 0.0D, 0.0D, 16.0D, 1.0D, 16.0D);
 	protected static final VoxelShape DOWN_SHAPE = Block.createCuboidShape(0.0D, 15.0D, 0.0D, 16.0D, 16.0D, 16.0D);
 	protected static final VoxelShape NORTH_SHAPE = Block.createCuboidShape(0.0D, 0.0D, 15.0D, 16.0D, 16.0D, 16.0D);
@@ -38,10 +42,12 @@ public class SkyboxPanelBlock extends Block {
 			.solidBlock((state, world, pos) -> false)
 			.suffocates((state, world, pos) -> false)
 			.blockVision((state, world, pos) -> false)
+			.luminance(state -> state.get(LIT) ? 15 : 0)
 		);
 
 		this.setDefaultState(this.stateManager.getDefaultState()
-			.with(FACING, Direction.NORTH));
+			.with(FACING, Direction.NORTH)
+			.with(LIT, false));
 	}
 
 	@Override
@@ -105,7 +111,7 @@ public class SkyboxPanelBlock extends Block {
 
 	@Override
 	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-		builder.add(FACING);
+		builder.add(FACING, LIT);
 	}
 
 	@Override
@@ -121,5 +127,16 @@ public class SkyboxPanelBlock extends Block {
 	@Override
 	public boolean isTranslucent(BlockState state, BlockView world, BlockPos pos) {
 		return true;
+	}
+
+	@Override
+	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+		if (!world.isClient) {
+			BlockState newState = state.cycle(LIT);
+			world.setBlockState(pos, newState, Block.NOTIFY_ALL);
+			world.updateNeighborsAlways(pos, this);
+			return ActionResult.SUCCESS;
+		}
+		return ActionResult.CONSUME;
 	}
 }

@@ -6,6 +6,7 @@ import net.minecraft.util.math.Direction;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 public class RoomNode {
 	public int gridX, gridZ; // on the [8x8 per tile] grid of rooms
@@ -98,7 +99,32 @@ public class RoomNode {
 				if (d == Direction.SOUTH) return "2x2_dead_end_north";
 				if (d == Direction.WEST) return "2x2_dead_end_east";
 			} else if (c == 2) {
-				return "2x2_straight_" + dirName(room.generationDirection);
+				int roomVersion = new Random().nextInt(1,4);
+				return "2x2_straight_" + dirName(room.generationDirection) + "_" + roomVersion;
+			}
+		} else if (room.roomSize == RoomSize.R1x2) {
+			if (room.northConnection != null) dirs.add(Direction.NORTH);
+			if (room.eastConnection != null) dirs.add(Direction.EAST);
+			if (room.southConnection != null) dirs.add(Direction.SOUTH);
+			if (room.westConnection != null) dirs.add(Direction.WEST);
+
+			int c = dirs.size();
+
+			if (c == 2) {
+				Direction a = dirs.get(0);
+				Direction b = dirs.get(1);
+
+				if ((a == Direction.NORTH && b == Direction.SOUTH) ||
+					(a == Direction.SOUTH && b == Direction.NORTH)) {
+					return "1x2_straight_north_south_1";
+				}
+
+				if ((a == Direction.EAST && b == Direction.WEST) ||
+					(a == Direction.WEST && b == Direction.EAST)) {
+					return "1x2_straight_east_west_1";
+				}
+			} else {
+				return "1x2_dead_end_" + dirName(room.generationDirection) + "_1";
 			}
 		} else if (room.roomSize == RoomSize.START) {
 			return "start";
