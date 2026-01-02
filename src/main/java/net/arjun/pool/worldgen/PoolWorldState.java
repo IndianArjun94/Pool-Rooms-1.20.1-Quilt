@@ -119,7 +119,8 @@ public class PoolWorldState extends PersistentState {
 
 		while (!frontier.isEmpty() && roomsCount < roomsToGenerate) {
 			RoomNode currentRoom = frontier.poll(); // we need to generate more rooms from this room (branches)
-			int branchesToGenerate = random.nextInt(0,2)+1; // generate 1-2 branches per room
+			int branchesToGenerate = random.nextInt(0,4)+1; // generate 1-2 branches per room
+			if (branchesToGenerate <= 3) branchesToGenerate = 1; else branchesToGenerate = 2;
 			if (currentRoom == start) branchesToGenerate = 4; // if this is the starting room, generate 4 branches
 			List<Direction> dirs = shuffledDirections(random.nextLong(), oppositeOf(currentRoom.generationDirection));
 
@@ -179,7 +180,7 @@ public class PoolWorldState extends PersistentState {
 				if (!rooms.containsKey(key)) { // we can generate a new room here
 
 					boolean placedRoom = false;
-					boolean failed2x2 = false;
+					boolean failed = false;
 
 					if (counter % 7 == 0) { // 2x2 room
 						if (!checkProximity(rooms, Pair.of(nx,nz), 10, RoomSize.R2x2)) {
@@ -192,7 +193,7 @@ public class PoolWorldState extends PersistentState {
 								int lengthZ = 2;
 
 								if (!check2x2SpaceAvailable(rooms, gridX, gridZ)) {
-									failed2x2 = true;
+									failed = true;
 								} else {
 
 									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R2x2);
@@ -224,7 +225,7 @@ public class PoolWorldState extends PersistentState {
 								int lengthZ = 2;
 
 								if (!check2x2SpaceAvailable(rooms, gridX, gridZ)) {
-									failed2x2 = true;
+									failed = true;
 								} else {
 
 									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R2x2);
@@ -256,7 +257,7 @@ public class PoolWorldState extends PersistentState {
 								int lengthZ = 2;
 
 								if (!check2x2SpaceAvailable(rooms, gridX, gridZ)) {
-									failed2x2 = true;
+									failed = true;
 								} else {
 
 									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R2x2);
@@ -288,7 +289,7 @@ public class PoolWorldState extends PersistentState {
 								int lengthZ = 2;
 
 								if (!check2x2SpaceAvailable(rooms, gridX, gridZ)) {
-									failed2x2 = true;
+									failed = true;
 								} else {
 
 									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R2x2);
@@ -313,133 +314,136 @@ public class PoolWorldState extends PersistentState {
 								}
 							}
 						} else {
-							failed2x2 = true;
+							failed = true;
 						}
 						if (placedRoom) roomsCount++;
 					}
-					if (!placedRoom && (counter % 15 == 0 || failed2x2)) { // 1x2 room
-						if (dir == Direction.SOUTH) {
-							int gridX = nx;
-							int gridZ = nz;
+					if (!placedRoom && counter % 15 == 0) { // 1x2 room
+						if (!checkProximity(rooms, Pair.of(nx,nz), 10, RoomSize.R1x2)) {
 
-							int lengthX = 1;
-							int lengthZ = 2;
+							if (dir == Direction.SOUTH) {
+								int gridX = nx;
+								int gridZ = nz;
 
-							if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
-							} else {
+								int lengthX = 1;
+								int lengthZ = 2;
 
-								RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
+								if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
+								} else {
 
-								newRoom.generationDirection = dir;
+									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
 
-								newRoom.eastAllowed = false;
-								newRoom.westAllowed = false;
+									newRoom.generationDirection = dir;
 
-								newRoom.northConnectionPosition = Pair.of(gridX, gridZ);
-								newRoom.southConnectionPosition = Pair.of(gridX, gridZ + 1);
+									newRoom.eastAllowed = false;
+									newRoom.westAllowed = false;
 
-								for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
-									for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
-										rooms.put(Pair.of(x, z), newRoom);
+									newRoom.northConnectionPosition = Pair.of(gridX, gridZ);
+									newRoom.southConnectionPosition = Pair.of(gridX, gridZ + 1);
+
+									for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
+										for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
+											rooms.put(Pair.of(x, z), newRoom);
+										}
 									}
+									frontier.addFirst(newRoom);
+
+									currentRoom.southConnection = newRoom;
+									newRoom.northConnection = currentRoom;
+									placedRoom = true;
 								}
-								frontier.addFirst(newRoom);
+							} else if (dir == Direction.EAST) {
+								int gridX = nx;
+								int gridZ = nz;
 
-								currentRoom.southConnection = newRoom;
-								newRoom.northConnection = currentRoom;
-								placedRoom = true;
-							}
-						} else if (dir == Direction.EAST) {
-							int gridX = nx;
-							int gridZ = nz;
+								int lengthX = 2;
+								int lengthZ = 1;
 
-							int lengthX = 2;
-							int lengthZ = 1;
+								if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
+								} else {
 
-							if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
-							} else {
+									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
 
-								RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
+									newRoom.generationDirection = dir;
 
-								newRoom.generationDirection = dir;
+									newRoom.northAllowed = false;
+									newRoom.southAllowed = false;
 
-								newRoom.northAllowed = false;
-								newRoom.southAllowed = false;
+									newRoom.westConnectionPosition = Pair.of(gridX, gridZ);
+									newRoom.eastConnectionPosition = Pair.of(gridX + 1, gridZ);
 
-								newRoom.westConnectionPosition = Pair.of(gridX, gridZ);
-								newRoom.eastConnectionPosition = Pair.of(gridX + 1, gridZ);
-
-								for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
-									for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
-										rooms.put(Pair.of(x, z), newRoom);
+									for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
+										for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
+											rooms.put(Pair.of(x, z), newRoom);
+										}
 									}
+									frontier.addFirst(newRoom);
+
+									currentRoom.eastConnection = newRoom;
+									newRoom.westConnection = currentRoom;
+									placedRoom = true;
 								}
-								frontier.addFirst(newRoom);
+							} else if (dir == Direction.NORTH) {
+								int gridX = nx;
+								int gridZ = nz - 1;
 
-								currentRoom.eastConnection = newRoom;
-								newRoom.westConnection = currentRoom;
-								placedRoom = true;
-							}
-						} else if (dir == Direction.NORTH) {
-							int gridX = nx;
-							int gridZ = nz - 1;
+								int lengthX = 1;
+								int lengthZ = 2;
 
-							int lengthX = 1;
-							int lengthZ = 2;
+								if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
+								} else {
 
-							if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
-							} else {
+									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
 
-								RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
+									newRoom.generationDirection = dir;
 
-								newRoom.generationDirection = dir;
+									newRoom.eastAllowed = false;
+									newRoom.westAllowed = false;
 
-								newRoom.eastAllowed = false;
-								newRoom.westAllowed = false;
+									newRoom.northConnectionPosition = Pair.of(gridX, gridZ);
+									newRoom.southConnectionPosition = Pair.of(gridX, gridZ + 1);
 
-								newRoom.northConnectionPosition = Pair.of(gridX, gridZ);
-								newRoom.southConnectionPosition = Pair.of(gridX, gridZ + 1);
-
-								for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
-									for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
-										rooms.put(Pair.of(x, z), newRoom);
+									for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
+										for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
+											rooms.put(Pair.of(x, z), newRoom);
+										}
 									}
+									frontier.addFirst(newRoom);
+
+									currentRoom.northConnection = newRoom;
+									newRoom.southConnection = currentRoom;
+									placedRoom = true;
 								}
-								frontier.addFirst(newRoom);
+							} else if (dir == Direction.WEST) {
+								int gridX = nx - 1;
+								int gridZ = nz;
 
-								currentRoom.northConnection = newRoom;
-								newRoom.southConnection = currentRoom;
-								placedRoom = true;
-							}
-						} else if (dir == Direction.WEST) {
-							int gridX = nx - 1;
-							int gridZ = nz;
+								int lengthX = 2;
+								int lengthZ = 1;
 
-							int lengthX = 2;
-							int lengthZ = 1;
+								if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
+								} else {
 
-							if (!check1x2SpaceAvailable(rooms, gridX, gridZ, lengthX, lengthZ)) {
-							} else {
+									RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
 
-								RoomNode newRoom = new RoomNode(gridX, gridZ, lengthX, lengthZ, RoomSize.R1x2);
+									newRoom.generationDirection = dir;
 
-								newRoom.generationDirection = dir;
+									newRoom.northAllowed = false;
+									newRoom.southAllowed = false;
 
-								newRoom.northAllowed = false;
-								newRoom.southAllowed = false;
+									newRoom.westConnectionPosition = Pair.of(gridX, gridZ);
+									newRoom.eastConnectionPosition = Pair.of(gridX + 1, gridZ);
 
-								newRoom.westConnectionPosition = Pair.of(gridX, gridZ);
-								newRoom.eastConnectionPosition = Pair.of(gridX + 1, gridZ);
-
-								for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
-									for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
-										rooms.put(Pair.of(x, z), newRoom);
+									for (int x = newRoom.gridX; x < newRoom.gridX + newRoom.gridLengthX; x++) {
+										for (int z = newRoom.gridZ; z < newRoom.gridZ + newRoom.gridLengthZ; z++) {
+											rooms.put(Pair.of(x, z), newRoom);
+										}
 									}
+									frontier.addFirst(newRoom);
+									currentRoom.westConnection = newRoom;
+									newRoom.eastConnection = currentRoom;
+									placedRoom = true;
 								}
-								frontier.addFirst(newRoom);
-								currentRoom.westConnection = newRoom;
-								newRoom.eastConnection = currentRoom;
-								placedRoom = true;
 							}
 						}
 						if (placedRoom) roomsCount++;
@@ -552,6 +556,8 @@ public class PoolWorldState extends PersistentState {
 
 		if (exclude != null) {
 			dirs.remove(exclude);
+			dirs.add(oppositeOf(exclude));
+			dirs.add(oppositeOf(exclude));
 			dirs.add(oppositeOf(exclude));
 		}
 
