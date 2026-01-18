@@ -25,6 +25,7 @@ public class RoomNode {
 	public boolean westAllowed = true;
 
 	public Direction generationDirection;
+	public Pair<Integer,Integer> generationPosition;
 
 	public Pair<Integer,Integer> northConnectionPosition; // where the neighboring rooms are
 	public Pair<Integer,Integer> eastConnectionPosition; // these go by chunks
@@ -33,7 +34,10 @@ public class RoomNode {
 
 	public String structureId;
 
-	public RoomNode(int gridX, int gridZ, int gridLengthX, int gridLengthZ, RoomSize roomSize) {
+	public boolean coordsCreated = false;
+	public boolean connectionPositionsCreated = false;
+
+	public RoomNode(int gridX, int gridZ, int gridLengthX, int gridLengthZ, RoomSize roomSize, Direction generationDirection) {
 		this.roomSize = roomSize;
 
 		this.gridX = gridX;
@@ -41,6 +45,17 @@ public class RoomNode {
 
 		this.gridLengthX = gridLengthX;
 		this.gridLengthZ = gridLengthZ;
+
+		this.generationDirection = generationDirection;
+
+		this.coordsCreated = true;
+	}
+
+	public RoomNode(Direction generationDirection, int nx, int nz, RoomSize roomSize) {
+		this.generationDirection = generationDirection;
+		this.generationPosition = Pair.of(nx,nz);
+
+		this.roomSize = roomSize;
 	}
 
 	public static String chooseStructure(RoomNode room) {
@@ -143,5 +158,142 @@ public class RoomNode {
 		} else {
 			return "west";
 		}
+	}
+
+	public void createRoomCoords() {
+		if (coordsCreated) return;
+
+		if (roomSize == RoomSize.R1x1) {
+			gridX = generationPosition.first;
+			gridZ = generationPosition.second;
+
+			gridLengthX = 1;
+			gridLengthZ = 1;
+		} else if (roomSize == RoomSize.R1x2) {
+			if (generationDirection == Direction.SOUTH) {
+				gridX = generationPosition.first;
+				gridZ = generationPosition.second;
+
+				gridLengthX = 1;
+				gridLengthZ = 2;
+			} else if (generationDirection == Direction.EAST) {
+				gridX = generationPosition.first;
+				gridZ = generationPosition.second;
+
+				gridLengthX = 2;
+				gridLengthZ = 1;
+			} else if (generationDirection == Direction.NORTH) {
+				gridX = generationPosition.first;
+				gridZ = generationPosition.second - 1;
+
+				gridLengthX = 1;
+				gridLengthZ = 2;
+			} else if (generationDirection == Direction.WEST) {
+				gridX = generationPosition.first - 1;
+				gridZ = generationPosition.second;
+
+				gridLengthX = 2;
+				gridLengthZ = 1;
+			}
+		} else if (roomSize == RoomSize.R2x2) {
+			if (generationDirection == Direction.SOUTH) {
+				gridX = generationPosition.first;
+				gridZ = generationPosition.second;
+
+				gridLengthX = 2;
+				gridLengthZ = 2;
+			} else if (generationDirection == Direction.EAST) {
+				gridX = generationPosition.first;
+				gridZ = generationPosition.second-1;
+
+				gridLengthX = 2;
+				gridLengthZ = 2;
+			} else if (generationDirection == Direction.NORTH) {
+				gridX = generationPosition.first-1;
+				gridZ = generationPosition.second-1;
+
+				gridLengthX = 2;
+				gridLengthZ = 2;
+			} else if (generationDirection == Direction.WEST) {
+				gridX = generationPosition.first-1;
+				gridZ = generationPosition.second;
+
+				gridLengthX = 2;
+				gridLengthZ = 2;
+			}
+		}
+
+		coordsCreated = true;
+	}
+
+	public void createConnectionPositions() {
+		if (connectionPositionsCreated) return;
+
+		if (roomSize == RoomSize.R1x1) {
+			northConnectionPosition = Pair.of(gridX, gridZ);
+			westConnectionPosition = Pair.of(gridX, gridZ);
+			eastConnectionPosition = Pair.of(gridX, gridZ);
+			southConnectionPosition = Pair.of(gridX, gridZ);
+		} else if (roomSize == RoomSize.R1x2) {
+			 if (generationDirection == Direction.SOUTH) {
+				eastAllowed = false;
+				westAllowed = false;
+
+				northConnectionPosition = Pair.of(gridX, gridZ);
+				southConnectionPosition = Pair.of(gridX, gridZ + 1);
+			} else if (generationDirection == Direction.EAST) {
+				northAllowed = false;
+				southAllowed = false;
+
+				westConnectionPosition = Pair.of(gridX, gridZ);
+				eastConnectionPosition = Pair.of(gridX + 1, gridZ);
+
+			} else if (generationDirection == Direction.NORTH) {
+				eastAllowed = false;
+				westAllowed = false;
+
+				northConnectionPosition = Pair.of(gridX, gridZ);
+				southConnectionPosition = Pair.of(gridX, gridZ + 1);
+
+			} else if (generationDirection == Direction.WEST) {
+				northAllowed = false;
+				southAllowed = false;
+
+				westConnectionPosition = Pair.of(gridX, gridZ);
+				eastConnectionPosition = Pair.of(gridX + 1, gridZ);
+
+			}
+		} else if (roomSize == RoomSize.R2x2) {
+			if (generationDirection == Direction.SOUTH) {
+				eastAllowed = false;
+				westAllowed = false;
+
+				southConnectionPosition = Pair.of(gridX, gridZ + 1);
+				northConnectionPosition = Pair.of(gridX, gridZ);
+
+			} else if (generationDirection == Direction.EAST) {
+				northAllowed = false;
+				southAllowed = false;
+
+				westConnectionPosition = Pair.of(gridX, gridZ + 1);
+				eastConnectionPosition = Pair.of(gridX + 1, gridZ + 1);
+
+			} else if (generationDirection == Direction.NORTH) {
+				eastAllowed = false;
+				westAllowed = false;
+
+				northConnectionPosition = Pair.of(gridX + 1, gridZ);
+				southConnectionPosition = Pair.of(gridX + 1, gridZ + 1);
+
+			} else if (generationDirection == Direction.WEST) {
+				northAllowed = false;
+				southAllowed = false;
+
+				eastConnectionPosition = Pair.of(gridX + 1, gridZ);
+				westConnectionPosition = Pair.of(gridX, gridZ);
+			}
+		}
+
+		connectionPositionsCreated = true;
 	}
 }

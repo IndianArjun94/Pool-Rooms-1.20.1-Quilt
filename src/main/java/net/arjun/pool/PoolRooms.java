@@ -71,12 +71,6 @@ public class PoolRooms implements ModInitializer {
 			if (world.getRegistryKey().equals(THE_LIBRARY_KEY) && !world.getPlayers().isEmpty()) {
 				ticks++;
 				RegenerationHelper.placeRoomsOnTick();
-
-				if (!PoolWorldState.instance.pastFirstTime && ticks == 10) {
-					PoolWorldState.instance.generateNewMap();
-					RegenerationHelper.regenerating = true;
-					System.out.println("PoolRooms: starting replacement");
-				}
 			}
 		});
 
@@ -88,9 +82,7 @@ public class PoolRooms implements ModInitializer {
 
 				PoolWorldState.instance = PoolWorldState.get(world);
 
-				if (PoolWorldState.instance.firstTime) {
-					PoolWorldState.instance.generateNewMap();
-				}
+				PoolWorldState.instance.generateNewMap();
 			}
 		}));
 
