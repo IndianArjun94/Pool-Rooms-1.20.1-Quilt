@@ -1,7 +1,6 @@
 package net.arjun.pool.block;
 
 import net.arjun.pool.worldgen.PoolWorldState;
-import net.arjun.pool.worldgen.RegenerationHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ShapeContext;
@@ -57,16 +56,6 @@ public class TranslucentBlock extends TransparentBlock {
 
 			// Update the block state in the world. This syncs to the client automatically.
 			world.setBlockState(pos, state.with(TRANSPARENCY, next), Block.NOTIFY_ALL);
-
-			if (!RegenerationHelper.regenerating) {
-				PoolWorldState.instance.generateNewMap();
-
-				RegenerationHelper.regenerating = true;
-				System.out.println("TranslucentBlock: Starting RegenerationHelper");
-			} else {
-				System.out.print("TranslucentBlock: cannot restart RegenerationHelper placement; it has already started");
-			}
-
 
 			return ActionResult.SUCCESS;
 		}

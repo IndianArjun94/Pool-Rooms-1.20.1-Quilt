@@ -2,17 +2,13 @@ package net.arjun.pool;
 
 import com.ibm.icu.impl.Pair;
 import com.mojang.serialization.Codec;
-import com.sun.jna.platform.win32.OaIdl;
 import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.arjun.pool.init.PoolModelRenderers;
 import net.arjun.pool.worldgen.PoolChunkGenerator;
 import net.arjun.pool.worldgen.PoolWorldState;
-import net.arjun.pool.worldgen.RegenerationHelper;
 import net.arjun.pool.worldgen.RoomNode;
-import net.minecraft.util.collection.Pool;
-import org.quiltmc.qsl.lifecycle.api.event.ServerWorldLoadEvents;
-import org.quiltmc.qsl.lifecycle.api.event.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -26,7 +22,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.world.gen.chunk.ChunkGenerator;
 import org.quiltmc.loader.api.ModContainer;
 import org.quiltmc.qsl.base.api.entrypoint.ModInitializer;
-import org.quiltmc.qsl.lifecycle.api.event.ServerWorldTickEvents;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,33 +62,30 @@ public class PoolRooms implements ModInitializer {
 
 		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
 
-		ServerWorldTickEvents.END.register((server, world) -> {
-			if (world.getRegistryKey().equals(THE_LIBRARY_KEY) && !world.getPlayers().isEmpty()) {
-				ticks++;
-				RegenerationHelper.placeRoomsOnTick();
+		ServerTickEvents.END_SERVER_TICK.register(server -> {
+			// 1. Get your specific dimension (Replace POOL_DIMENSION_KEY with your actual dimension key)
+			ServerWorld poolWorld = server.getWorld(THE_LIBRARY_KEY);
+
+			if (poolWorld != null) {
+				// 2. Grab your PersistentState
+				PoolWorldState state = PoolWorldState.get(poolWorld);
+
+//				 3. Loop through all players currently in this dimension
+//				for (ServerPlayerEntity player : poolWorld.getPlayers()) {
+//
+//					// 4. Check if the player is getting close to the edge of the current generation
+//					if (state.isPlayerNearEdge(player, state)) {
+//
+//						// 5. Fire the Async Generator!
+//						state.expandMapAsync(poolWorld);
+//
+//						// Break out of the player loop so we don't accidentally fire
+//						// multiple generations if two players are near the edge
+//						break;
+//					}
+//				}
 			}
 		});
-
-		ServerWorldLoadEvents.LOAD.register(((server, world) -> {
-			if (world.getRegistryKey() == THE_LIBRARY_KEY) {
-				System.out.println("PoolRooms: creating server");
-				activeServer = server;
-				ticks = 0;
-
-				PoolWorldState.instance = PoolWorldState.get(world);
-
-				PoolWorldState.instance.generateNewMap();
-			}
-		}));
-
-		ServerWorldLoadEvents.UNLOAD.register(((server, world) ->{
-			if (world.getRegistryKey() == THE_LIBRARY_KEY) {
-				System.out.println("PoolRooms: deleting server");
-				activeServer = null;
-				ticks = 0;
-				RegenerationHelper.reset();
-			}
-		}));
 	}
 
 	public static Identifier id(String id) {

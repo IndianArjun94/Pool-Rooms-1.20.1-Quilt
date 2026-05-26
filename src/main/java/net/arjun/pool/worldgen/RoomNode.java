@@ -37,6 +37,10 @@ public class RoomNode {
 	public boolean coordsCreated = false;
 	public boolean connectionPositionsCreated = false;
 
+	public RoomNode() {
+
+	}
+
 	public RoomNode(int gridX, int gridZ, int gridLengthX, int gridLengthZ, RoomSize roomSize, Direction generationDirection) {
 		this.roomSize = roomSize;
 
