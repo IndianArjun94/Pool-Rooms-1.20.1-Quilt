@@ -4,6 +4,7 @@ import com.ibm.icu.impl.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.arjun.pool.PoolRooms;
+import net.arjun.pool.worldgen.conceptdev.PoolRoom;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.Structure;
@@ -76,18 +77,6 @@ public class PoolChunkGenerator extends ChunkGenerator {
 			return; // fail-safe
 		} // checks and loads
 
-
-		Map<Pair<Integer, Integer>, RoomNode> roomMap = PoolRooms.currentMap;
-
-		if (PoolRooms.currentMap == null) {
-			PoolWorldState state = PoolWorldState.get(serverWorld);
-
-			// Generate the initial tile instantly so these spawn chunks get their structures
-			roomMap = state.generateMap();
-			PoolRooms.currentMap = roomMap;
-			state.markDirty();
-		}
-
 		int chunkX = chunk.getPos().x;
 		int chunkZ = chunk.getPos().z;
 
@@ -98,32 +87,28 @@ public class PoolChunkGenerator extends ChunkGenerator {
 
 		Pair<Integer,Integer>[] quadrants = new Pair[]{q1,q2,q3,q4};
 
+		PoolWorldState state = PoolWorldState.instance;
+		Map<Pair<Integer, Integer>, RoomNode> roomMap = PoolRooms.currentMap;
+		if (roomMap == null) {
+			roomMap = state.generateMap();
+			PoolRooms.currentMap = roomMap;
+		}
+
+		int minRoomX = chunkX * 2;
+		int maxRoomX = chunkX * 2 + 1;
+		int minRoomZ = chunkZ * 2;
+		int maxRoomZ = chunkZ * 2 + 1;
+
+		state.gridSizeXPositive = Math.max(state.gridSizeXPositive, maxRoomX+5);
+		state.gridSizeXNegative = Math.max(state.gridSizeXNegative, -minRoomX+5);
+		state.gridSizeZPositive = Math.max(state.gridSizeZPositive, maxRoomZ+5);
+		state.gridSizeZNegative = Math.max(state.gridSizeZNegative, -minRoomZ+5);
+
+		PoolRooms.currentMap = state.generateMap();
+		roomMap = PoolRooms.currentMap;
+
 		for (int i = 0; i < 4; i++) {
 			Pair<Integer,Integer> currentQuadrant = quadrants[i];
-
-			if (!roomMap.containsKey(currentQuadrant)) {
-				System.out.println("room doesn't exit! extending map");
-				PoolWorldState state = PoolWorldState.get(serverWorld);
-				int roomX = chunkX*2;
-				int roomZ = chunkZ*2;
-				if (roomX > 0) {
-					state.gridSizeXPositive = roomX+1;
-				} else {
-					state.gridSizeXNegative = roomX-1;
-				}
-
-				if (roomZ > 0) {
-					state.gridSizeZPositive = roomZ+1;
-				} else {
-					state.gridSizeZNegative = roomZ-1;
-				}
-				PoolRooms.currentMap = state.generateMap();
-//				continue;
-			}
-
-			if (!roomMap.containsKey(currentQuadrant)) {
-				System.out.println("it STILL doesn't exist!");
-			}
 
 			RoomNode room = roomMap.get(currentQuadrant);
 
