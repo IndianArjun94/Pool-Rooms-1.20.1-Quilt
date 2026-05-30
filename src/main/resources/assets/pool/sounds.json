@@ -4,7 +4,8 @@
     "sounds": [
       {
         "name": "pool:pool_ambience",
-        "stream": true
+        "stream": true,
+        "volume": 0.5
       }
     ]
   }
