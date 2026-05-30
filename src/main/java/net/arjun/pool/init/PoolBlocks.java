@@ -45,7 +45,7 @@ public class PoolBlocks {
 		Blocks.createLeavesBlock(BlockSoundGroup.AZALEA_LEAVES));
 
 	public static final Block DEBUG_PORTAL = registerBlock("debug_portal",
-		new DebugPortalBlock(QuiltBlockSettings.copyOf(Blocks.STONE), PoolRooms.THE_LIBRARY_KEY));
+		new DebugPortalBlock(QuiltBlockSettings.copyOf(Blocks.STONE), PoolRooms.POOLS_KEY));
 
 	public static final Block TRANSPARENT_BLOCK = registerBlock("transparent_block",
 		new TransparentBlock(QuiltBlockSettings.copyOf(Blocks.STONE)));

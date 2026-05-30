@@ -5,14 +5,12 @@ import com.mojang.serialization.Codec;
 import net.arjun.pool.init.PoolBlockEntities;
 import net.arjun.pool.init.PoolBlocks;
 import net.arjun.pool.init.PoolModelRenderers;
+import net.arjun.pool.init.PoolSounds;
 import net.arjun.pool.worldgen.PoolChunkGenerator;
 import net.arjun.pool.worldgen.PoolWorldState;
 import net.arjun.pool.worldgen.RoomNode;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -33,20 +31,16 @@ public class PoolRooms implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LoggerFactory.getLogger("Pool");
 
-	private static MinecraftServer activeServer;
-
 	public static final String MOD_ID = "pool";
 	public static String MOD_NAME;
-
-	public static int ticks = 0;
 
 	public static final RegistryKey<Codec<? extends ChunkGenerator>> POOL_CHUNK_GENERATOR =
 		RegistryKey.of(RegistryKeys.CHUNK_GENERATOR, new Identifier("pool", "pool_chunk_generator"));
 
 	public static final Codec<PoolChunkGenerator> POOL_CHUNK_GENERATOR_CODEC = PoolChunkGenerator.CODEC;
 
-	public static final RegistryKey<World> THE_LIBRARY_KEY =
-		RegistryKey.of(RegistryKeys.WORLD, new Identifier(MOD_ID, "library_dimension"));
+	public static final RegistryKey<World> POOLS_KEY =
+		RegistryKey.of(RegistryKeys.WORLD, new Identifier(MOD_ID, "pools"));
 
 	public static Map<Pair<Integer,Integer>, RoomNode> currentMap = null;
 
@@ -59,16 +53,15 @@ public class PoolRooms implements ModInitializer {
 		PoolBlocks.init();
 		PoolBlockEntities.init();
 		PoolModelRenderers.init();
+		PoolSounds.register();
 
 		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
 
 
 		ServerTickEvents.START_SERVER_TICK.register(server -> {
-			// 1. Get your specific dimension (Replace POOL_DIMENSION_KEY with your actual dimension key)
-			ServerWorld poolWorld = server.getWorld(THE_LIBRARY_KEY);
+			ServerWorld poolWorld = server.getWorld(POOLS_KEY);
 
 			if (poolWorld != null) {
-				// 2. Grab your PersistentState
 				PoolWorldState.get(poolWorld);
 			}
 		});
@@ -76,32 +69,6 @@ public class PoolRooms implements ModInitializer {
 
 	public static Identifier id(String id) {
 		return new Identifier("pool", id);
-	}
-
-	public static List<Vec3d> getPlayerPositions() {
-		MinecraftServer server = activeServer;
-
-		if (server == null) {
-			return Collections.emptyList();
-		}
-
-		if (server.getPlayerManager() == null) {
-			return Collections.emptyList();
-		}
-
-		List<ServerPlayerEntity> originalList = server.getPlayerManager().getPlayerList();
-
-		synchronized (originalList) {
-			List<Vec3d> positions = new ArrayList<>(originalList.size());
-			for (ServerPlayerEntity player : originalList) {
-				positions.add(player.getPos());
-			}
-			return positions;
-		}
-	}
-
-	public static ServerWorld getServerWorld() {
-		return activeServer.getWorld(THE_LIBRARY_KEY);
 	}
 
 }

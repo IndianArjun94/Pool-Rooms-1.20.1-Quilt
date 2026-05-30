@@ -1,0 +1,11 @@
+{
+  "music.pool_ambience": {
+    "category": "music",
+    "sounds": [
+      {
+        "name": "pool:pool_ambience",
+        "stream": true
+      }
+    ]
+  }
+}

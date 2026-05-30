@@ -11,6 +11,7 @@ version = "$project.version+${libs.versions.minecraft.get()}"
 group = project.maven_group
 
 repositories {
+	mavenCentral() // <-- Add this!
 	maven {
 		url = 'https://ladysnake.jfrog.io/artifactory/mods'
 	}
@@ -20,7 +21,19 @@ repositories {
 	maven {
 		url = 'https://maven.shedaniel.me/'
 	}
-	maven { url = "https://api.modrinth.com/maven" }
+
+	// Updated Modrinth Maven block
+	exclusiveContent {
+		forRepository {
+			maven {
+				name = "Modrinth"
+				url = "https://api.modrinth.com/maven" // <-- The actual, working URL
+			}
+		}
+		filter {
+			includeGroup "maven.modrinth"
+		}
+	}
 }
 
 loom {
@@ -48,29 +61,17 @@ configurations {
 dependencies {
 	minecraft libs.minecraft
 	mappings variantOf(libs.quilt.mappings) { classifier 'intermediary-v2' }
-	// Replace the above line with the block below if you want to use Mojang mappings as your primary mappings, falling back on QM for parameters and Javadocs
-	/*
-	mappings loom.layered {
-		mappings "org.quiltmc:quilt-mappings:${libs.versions.quilt.mappings.get()}:intermediary-v2"
-		officialMojangMappings()
-	}
-	*/
+
 	modImplementation libs.quilt.loader
 
-	// QSL is not a complete API; You will need Quilted Fabric API to fill in the gaps.
-	// Quilted Fabric API will automatically pull in the correct QSL version.
 	modImplementation libs.quilted.fabric.api
-	// modImplementation libs.bundles.quilted.fabric.api // If you wish to use Fabric API's deprecated modules, you can replace the above line with this one
 
-//	modImplementation("org.quiltmc.quilted-fabric-api:fabric-rendering-data-attachment-v1:7.0.5+0.84.0-1.20.1")
+	modLocalRuntime "org.quiltmc.quilted-fabric-api:fabric-rendering-data-attachment-v1:7.0.5+0.84.0-1.20.1"
+	modLocalRuntime "maven.modrinth:sodium:mc1.20.1-0.5.3"
+	modLocalRuntime "maven.modrinth:iris:1.6.11+1.20.1"
 
-
-	modCompileOnly("maven.modrinth:sodium:mc1.20.1-0.5.3-fabric") // works
-	modCompileOnly("maven.modrinth:iris:1.6.11+1.20.1") // works
-	modCompileOnly("maven.modrinth:effective:2.2.0+1.20.1")
-
-//	modRuntimeOnly("maven.modrinth:sodium:mc1.20.1-0.5.13-fabric")
-//	modRuntimeOnly("maven.modrinth:iris:1.7.6+1.20.1")
+	runtimeOnly "org.anarres:jcpp:1.4.14"
+	runtimeOnly "io.github.douira:glsl-transformer:2.0.0-pre13" // <-- Add this!
 
 	includeMod libs.ludocrypt.specialmodels
 }

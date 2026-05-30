@@ -1,10 +1,10 @@
 {
-  "type": "pool:library_dimension",
+  "type": "pool:pools",
   "generator": {
     "type": "pool:pool_chunk_generator",
     "biome_source": {
       "type": "minecraft:fixed",
-      "biome": "minecraft:the_void"
+      "biome": "pool:light_poolrooms"
     }
   }
 }
