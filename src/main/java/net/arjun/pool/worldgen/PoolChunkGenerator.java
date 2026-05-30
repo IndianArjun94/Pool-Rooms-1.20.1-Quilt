@@ -4,7 +4,6 @@ import com.ibm.icu.impl.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.arjun.pool.PoolRooms;
-import net.arjun.pool.worldgen.conceptdev.PoolRoom;
 import net.minecraft.block.BlockState;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.structure.Structure;
@@ -55,7 +54,7 @@ public class PoolChunkGenerator extends ChunkGenerator {
 		for (int x = minX; x < maxX; x++) {
 			for (int z = minZ; z < maxZ; z++) {
 				chunk.setBlockState(
-					new BlockPos(x,y,z),
+					new BlockPos(x, y, z),
 					state,
 					false
 				);
@@ -77,43 +76,66 @@ public class PoolChunkGenerator extends ChunkGenerator {
 			return; // fail-safe
 		} // checks and loads
 
+		PoolWorldState state = PoolWorldState.instance;
+		Map<Pair<Integer, Integer>, RoomNode> roomMap = PoolRooms.currentMap;
+
+		if (PoolRooms.currentMap == null) {
+			state.currentGridSquare = Pair.of(0, 0);
+			PoolRooms.currentMap = state.generateMap();
+			roomMap = PoolRooms.currentMap; // Re-assign local variable so it doesn't crash!
+		}
+
 		int chunkX = chunk.getPos().x;
 		int chunkZ = chunk.getPos().z;
 
-		Pair<Integer,Integer> q1 = Pair.of(chunkX*2,chunkZ*2);
-		Pair<Integer,Integer> q2 = Pair.of(chunkX*2+1,chunkZ*2);
-		Pair<Integer,Integer> q3 = Pair.of(chunkX*2,chunkZ*2+1);
-		Pair<Integer,Integer> q4 = Pair.of(chunkX*2+1,chunkZ*2+1);
+		// 2. Get the absolute room coordinates for the 4 quadrants of this chunk
+		int rX1 = chunkX * 2;
+		int rX2 = chunkX * 2 + 1;
+		int rZ1 = chunkZ * 2;
+		int rZ2 = chunkZ * 2 + 1;
 
-		Pair<Integer,Integer>[] quadrants = new Pair[]{q1,q2,q3,q4};
+		// 3. Map the room coordinates to your custom [-9 to +10] Grid Squares
+		// Math.floorDiv mathematically guarantees negatives round cleanly to the correct square
+		int sqX1 = Math.floorDiv(rX1 + 9, state.gridSquareLength);
+		int sqX2 = Math.floorDiv(rX2 + 9, state.gridSquareLength);
+		int sqZ1 = Math.floorDiv(rZ1 + 9, state.gridSquareLength);
+		int sqZ2 = Math.floorDiv(rZ2 + 9, state.gridSquareLength);
 
-		PoolWorldState state = PoolWorldState.instance;
-		Map<Pair<Integer, Integer>, RoomNode> roomMap = PoolRooms.currentMap;
-		if (roomMap == null) {
-			roomMap = state.generateMap();
-			PoolRooms.currentMap = roomMap;
+		// 4. A single chunk might straddle 1, 2, or 4 different grid squares!
+		// Put them in a HashSet so we only generate unique squares.
+		Set<Pair<Integer, Integer>> requiredSquares = new HashSet<>();
+		requiredSquares.add(Pair.of(sqX1, sqZ1));
+		requiredSquares.add(Pair.of(sqX2, sqZ1));
+		requiredSquares.add(Pair.of(sqX1, sqZ2));
+		requiredSquares.add(Pair.of(sqX2, sqZ2));
+
+		// 5. Generate any grid squares that this chunk needs that don't exist yet
+		for (Pair<Integer, Integer> square : requiredSquares) {
+			if (!state.generatedGridSquares.contains(square)) {
+				System.out.println("Chunk crossed border! Generating new Grid Square: " + square.first + ", " + square.second);
+				state.currentGridSquare = square;
+				PoolRooms.currentMap = state.generateMap();
+			}
 		}
 
-		int minRoomX = chunkX * 2;
-		int maxRoomX = chunkX * 2 + 1;
-		int minRoomZ = chunkZ * 2;
-		int maxRoomZ = chunkZ * 2 + 1;
+		Pair<Integer, Integer> q1 = Pair.of(chunkX * 2, chunkZ * 2);
+		Pair<Integer, Integer> q2 = Pair.of(chunkX * 2 + 1, chunkZ * 2);
+		Pair<Integer, Integer> q3 = Pair.of(chunkX * 2, chunkZ * 2 + 1);
+		Pair<Integer, Integer> q4 = Pair.of(chunkX * 2 + 1, chunkZ * 2 + 1);
 
-		state.gridSizeXPositive = Math.max(state.gridSizeXPositive, maxRoomX+5);
-		state.gridSizeXNegative = Math.max(state.gridSizeXNegative, -minRoomX+5);
-		state.gridSizeZPositive = Math.max(state.gridSizeZPositive, maxRoomZ+5);
-		state.gridSizeZNegative = Math.max(state.gridSizeZNegative, -minRoomZ+5);
-
-		PoolRooms.currentMap = state.generateMap();
-		roomMap = PoolRooms.currentMap;
+		Pair<Integer, Integer>[] quadrants = new Pair[]{q1, q2, q3, q4};
 
 		for (int i = 0; i < 4; i++) {
-			Pair<Integer,Integer> currentQuadrant = quadrants[i];
+			Pair<Integer, Integer> currentQuadrant = quadrants[i];
 
 			RoomNode room = roomMap.get(currentQuadrant);
 
-			int x = room.gridX*8;
-			int z = room.gridZ*8;
+			if (room == null) {
+				continue;
+			}
+
+			int x = room.gridX * 8;
+			int z = room.gridZ * 8;
 
 			StructureTemplateManager manager = serverWorld.getStructureTemplateManager();
 			Optional<Structure> _structure = manager.getStructure(new Identifier(PoolRooms.MOD_ID, room.structureId));
@@ -133,14 +155,14 @@ public class PoolChunkGenerator extends ChunkGenerator {
 				Structure structure2 = _structure2.get();
 
 				structure.place(world,
-					new BlockPos(x,48,z),
+					new BlockPos(x, 48, z),
 					new BlockPos(0, 0, 0),
 					placementData,
 					world.getRandom(),
 					0);
 
 				structure2.place(world,
-					new BlockPos(x,96,z),
+					new BlockPos(x, 96, z),
 					new BlockPos(0, 0, 0),
 					placementData,
 					world.getRandom(),
@@ -159,7 +181,7 @@ public class PoolChunkGenerator extends ChunkGenerator {
 			Structure structure = _structure.get();
 
 			structure.place(world,
-				new BlockPos(x,48,z),
+				new BlockPos(x, 48, z),
 				new BlockPos(0, 0, 0),
 				placementData,
 				world.getRandom(),

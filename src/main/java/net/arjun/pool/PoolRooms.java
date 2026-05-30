@@ -62,28 +62,14 @@ public class PoolRooms implements ModInitializer {
 
 		Registry.register(Registries.CHUNK_GENERATOR, new Identifier(MOD_ID, "pool_chunk_generator"), POOL_CHUNK_GENERATOR_CODEC);
 
-		ServerTickEvents.END_SERVER_TICK.register(server -> {
+
+		ServerTickEvents.START_SERVER_TICK.register(server -> {
 			// 1. Get your specific dimension (Replace POOL_DIMENSION_KEY with your actual dimension key)
 			ServerWorld poolWorld = server.getWorld(THE_LIBRARY_KEY);
 
 			if (poolWorld != null) {
 				// 2. Grab your PersistentState
-				PoolWorldState state = PoolWorldState.get(poolWorld);
-
-//				 3. Loop through all players currently in this dimension
-//				for (ServerPlayerEntity player : poolWorld.getPlayers()) {
-//
-//					// 4. Check if the player is getting close to the edge of the current generation
-//					if (state.isPlayerNearEdge(player, state)) {
-//
-//						// 5. Fire the Async Generator!
-//						state.expandMapAsync(poolWorld);
-//
-//						// Break out of the player loop so we don't accidentally fire
-//						// multiple generations if two players are near the edge
-//						break;
-//					}
-//				}
+				PoolWorldState.get(poolWorld);
 			}
 		});
 	}

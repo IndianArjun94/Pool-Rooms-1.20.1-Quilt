@@ -18,13 +18,19 @@ public class PoolWorldState extends PersistentState {
 	public static PoolWorldState instance;
 	public List<Vec3d> playerPoses;
 
-	public int gridSizeXPositive = 10;
-	public int gridSizeZPositive = 10;
+//	public int gridSizeXPositive = 10;
+//	public int gridSizeZPositive = 10;
 
-	public int gridSizeXNegative = 9;
-	public int gridSizeZNegative = 9;
+//	public int gridSizeXNegative = 9;
+//	public int gridSizeZNegative = 9;
 
-	private final int gridScalar = 10;
+	public final int gridSquareLength = 20;
+
+	public Pair<Integer,Integer> currentGridSquare = Pair.of(0,0);
+
+	public final Set<Pair<Integer, Integer>> generatedGridSquares = ConcurrentHashMap.newKeySet();
+
+//	public int[] newGridCoords = new int[]{gridSizeXPositive,-gridSizeXNegative,gridSizeZPositive,-gridSizeZNegative};
 
 	private Random random;
 
@@ -103,9 +109,17 @@ public class PoolWorldState extends PersistentState {
 
 		int usedSlots = 0;
 
+		int gridX1 = currentGridSquare.first*gridSquareLength - ((gridSquareLength/2)-1);
+		int gridX2 = currentGridSquare.first*gridSquareLength + (gridSquareLength/2);
+		int gridZ1 = currentGridSquare.second*gridSquareLength - ((gridSquareLength/2)-1);
+		int gridZ2 = currentGridSquare.second*gridSquareLength + (gridSquareLength/2);
+
+		ArrayList<RoomNode> boundaryRoomsToConnect = new ArrayList<>();
+
 		if (random == null) {
 			random = new Random(seed);
 		}
+
 
 		if (isFirstGenerating) {
 
@@ -190,26 +204,27 @@ public class PoolWorldState extends PersistentState {
 			int i = 0;
 			int size = outOfBoundsRooms.size();
 
+			// seed in a room in the middle of the new grid square
+
+			Pair<Integer,Integer> seedCoords = Pair.of((gridX1+gridX2-1)/2, (gridZ1+gridZ2-1)/2);
+			RoomNode seedRoom = new RoomNode(seedCoords.first, seedCoords.second, 1, 1, RoomSize.R1x1, Direction.NORTH);
+
+			rooms.put(seedCoords, seedRoom);
+
+			northStack.push(seedRoom);
+			eastStack.push(seedRoom);
+			southStack.push(seedRoom);
+			westStack.push(seedRoom);
+
 			while (i < size) {
 
 				RoomNode possibleRoom = outOfBoundsRooms.get(i);
 
-				if (possibleRoom.gridX <= gridSizeXPositive &&
-					possibleRoom.gridX >= -gridSizeXNegative &&
-					possibleRoom.gridZ <= gridSizeZPositive &&
-					possibleRoom.gridZ >= -gridSizeZNegative) {
+				if (isInsideBounds(possibleRoom.gridX, possibleRoom.gridZ)) {
 
-//					rooms.put(Pair.of(possibleRoom.gridX, possibleRoom.gridZ), possibleRoom); done earlier in previous iteration
+					rooms.put(Pair.of(possibleRoom.gridX, possibleRoom.gridZ), possibleRoom);
 
-					if (i % 4 == 0) {
-						northStack.add(possibleRoom);
-					} else if (i % 4 == 1) {
-						eastStack.add(possibleRoom);
-					} else if (i % 4 == 2) {
-						southStack.add(possibleRoom);
-					} else {
-						westStack.add(possibleRoom);
-					}
+					boundaryRoomsToConnect.add(possibleRoom);
 
 					outOfBoundsRooms.remove(i);
 				} else {
@@ -219,35 +234,10 @@ public class PoolWorldState extends PersistentState {
 				size = outOfBoundsRooms.size();
 			}
 
-//			final int maxRevivals = 2;
-//			int revivals = 0;
-//			for (RoomNode room : rooms.values()) {
-//				// Check if the room has an open door, touching empty space, and is within the new bounds
-//				if (room.northConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ - 1)) && room.gridZ >= -(gridSizeZNegative-1)) {
-//					northStack.push(room);
-//					revivals++;
-//				}
-//				else if (room.eastConnection == null && !rooms.containsKey(Pair.of(room.gridX + 1, room.gridZ)) && room.gridX <= gridSizeXPositive) {
-//					eastStack.push(room);
-//					revivals++;
-//				}
-//				else if (room.southConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ + 1)) && room.gridZ <= gridSizeZPositive) {
-//					southStack.push(room);
-//					revivals++;
-//				}
-//				else if (room.westConnection == null && !rooms.containsKey(Pair.of(room.gridX - 1, room.gridZ)) && room.gridX >= -(gridSizeXNegative-1)) {
-//					westStack.push(room);
-//					revivals++;
-//				}
-////				if (revivals >= maxRevivals) {
-////					break;
-////                }
-//			}
-//			System.out.println("revivals: " + revivals);
 		}
 
 		usedSlots = rooms.size();
-		int targetSlots = (gridSizeXNegative + gridSizeXPositive + 1) * (gridSizeZNegative + gridSizeZPositive + 1);
+//		int targetSlots = (gridSizeXNegative + gridSizeXPositive + 1) * (gridSizeZNegative + gridSizeZPositive + 1);
 		int iterations = 0;
 
 		int stackEmptyStreak = 0;
@@ -271,7 +261,7 @@ public class PoolWorldState extends PersistentState {
 			if (stack.isEmpty()) {
 				stackEmptyStreak++;
 				if (stackEmptyStreak == 4) {
-					System.out.println("PoolWorldState: stopped expansion early; no frontier rooms remain (" + usedSlots + "/" + targetSlots + " slots).");
+//					System.out.println("PoolWorldState: stopped expansion early; no frontier rooms remain (" + usedSlots + "/" + targetSlots + " slots).");
 					break;
 				}
 				continue;
@@ -279,23 +269,49 @@ public class PoolWorldState extends PersistentState {
 			stackEmptyStreak = 0;
 			room = stack.peek();
 
+
 			ArrayList<Direction> dirs = new ArrayList<>();
 
 			if (room.northConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ - 1))) { //  && room.gridZ != -(gridSizeZNegative-1)
 				dirs.add(Direction.NORTH);
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX, room.gridZ - 1)))) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX, room.gridZ - 1));
+				foundBoundaryRoom.southConnection = room;
+				room.northConnection = foundBoundaryRoom;
+				boundaryRoomsToConnect.remove(foundBoundaryRoom);
+				continue;
 			}
 			if (room.eastConnection == null && !rooms.containsKey(Pair.of(room.gridX + 1, room.gridZ))) { //  && room.gridX != gridSizeXPositive
 				dirs.add(Direction.EAST);
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX + 1, room.gridZ)))) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX + 1, room.gridZ));
+				foundBoundaryRoom.westConnection = room;
+				room.eastConnection = foundBoundaryRoom;
+				boundaryRoomsToConnect.remove(foundBoundaryRoom);
+				continue;
 			}
 			if (room.southConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ + 1))) { //  && room.gridZ != gridSizeZPositive
 				dirs.add(Direction.SOUTH);
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX, room.gridZ + 1)))) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX, room.gridZ + 1));
+				foundBoundaryRoom.northConnection = room;
+				room.southConnection = foundBoundaryRoom;
+				boundaryRoomsToConnect.remove(foundBoundaryRoom);
+				continue;
 			}
 			if (room.westConnection == null && !rooms.containsKey(Pair.of(room.gridX - 1, room.gridZ))) { //  && room.gridX != -(gridSizeXNegative-1)
 				dirs.add(Direction.WEST);
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX - 1, room.gridZ)))) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX - 1, room.gridZ));
+				foundBoundaryRoom.eastConnection = room;
+				room.westConnection = foundBoundaryRoom;
+				boundaryRoomsToConnect.remove(foundBoundaryRoom);
+				continue;
 			}
 
 			if (dirs.isEmpty()) {
 				stack.pop();
+
 				continue;
 			}
 
@@ -305,22 +321,27 @@ public class PoolWorldState extends PersistentState {
 
 			RoomNode newRoom = new RoomNode();
 
-			if (dir == Direction.NORTH) {
+			int availableConnections = availableConnections1x1(room);
+
+			if ((dir == Direction.NORTH && isInsideBounds(room.gridX, room.gridZ - 1) || (dir == Direction.NORTH && availableConnections != 1))) {
 				offset[1] = -1;
 				room.northConnection = newRoom;
 				newRoom.southConnection = room;
-			} else if (dir == Direction.EAST) {
+			} else if ((dir == Direction.EAST && isInsideBounds(room.gridX + 1, room.gridZ) || (dir == Direction.EAST && availableConnections != 1))) {
 				offset[0] = 1;
 				room.eastConnection = newRoom;
 				newRoom.westConnection = room;
-			} else if (dir == Direction.SOUTH) {
+			} else if (((dir == Direction.SOUTH && isInsideBounds(room.gridX, room.gridZ + 1) || (dir == Direction.SOUTH && availableConnections != 1)))) {
 				offset[1] = 1;
 				room.southConnection = newRoom;
 				newRoom.northConnection = room;
-			} else if (dir == Direction.WEST) {
+			} else if (((dir == Direction.WEST && isInsideBounds(room.gridX - 1, room.gridZ) || (dir == Direction.WEST && availableConnections != 1)))) {
 				offset[0] = -1;
 				room.westConnection = newRoom;
 				newRoom.eastConnection = room;
+			} else {
+				stack.pop();
+				continue;
 			}
 
 			newRoom.gridX = room.gridX + offset[0];
@@ -330,15 +351,13 @@ public class PoolWorldState extends PersistentState {
 			newRoom.roomSize = RoomSize.R1x1;
 			newRoom.generationDirection = dir;
 
-			rooms.put(Pair.of(newRoom.gridX, newRoom.gridZ), newRoom);
 
-			if (newRoom.gridX >= gridSizeXPositive || newRoom.gridX <= -gridSizeXNegative || newRoom.gridZ >= gridSizeZPositive || newRoom.gridZ <= -gridSizeZNegative) {
+			if (!isInsideBounds(newRoom.gridX, newRoom.gridZ)) {
 				outOfBoundsRooms.add(newRoom);
-//				stack.pop();
 				continue;
 			}
 
-//			rooms.put(Pair.of(newRoom.gridX, newRoom.gridZ), newRoom);
+			rooms.put(Pair.of(newRoom.gridX, newRoom.gridZ), newRoom);
 			stack.push(newRoom);
 			usedSlots++;
 
@@ -509,49 +528,63 @@ public class PoolWorldState extends PersistentState {
 			room.structureId = RoomNode.chooseStructure(room);
 		}
 
+		generatedGridSquares.add(currentGridSquare);
+
 //		Saving the new map
 //		PoolRooms.currentMap = rooms;
 		return rooms;
 
 	}
 
-	public boolean isPlayerNearEdge(ServerPlayerEntity player, PoolWorldState state) {
-		if (isGenerating || rooms.isEmpty()) {
-			return false;
-		}
+	private boolean isInsideBounds(int x, int z) {
+		int gridX1 = currentGridSquare.first*gridSquareLength - ((gridSquareLength/2)-1);
+		int gridX2 = currentGridSquare.first*gridSquareLength + (gridSquareLength/2);
+		int gridZ1 = currentGridSquare.second*gridSquareLength - ((gridSquareLength/2)-1);
+		int gridZ2 = currentGridSquare.second*gridSquareLength + (gridSquareLength/2);
 
-		// 1. Convert player's physical block position to your grid coordinates
-		// (You will need to adjust this math based on how big your actual rooms are in-game)
-		int playerGridX = (int) Math.floor(player.getX() / 8);
-		int playerGridZ = (int) Math.floor(player.getZ() / 8);
-
-		// 2. Define how close they can get before triggering a new tile generation
-		int bufferZone = 3; // Start generating when they are 5 rooms away from the edge
-
-		int minGridX = -gridSizeXNegative;
-		int maxGridX = gridSizeXPositive;
-		int minGridZ = -gridSizeZNegative;
-		int maxGridZ = gridSizeZPositive;
-
-		boolean nearEastEdge = playerGridX + bufferZone >= maxGridX;
-		boolean nearWestEdge = playerGridX - bufferZone <= minGridX;
-		boolean nearSouthEdge = playerGridZ + bufferZone >= maxGridZ;
-		boolean nearNorthEdge = playerGridZ - bufferZone <= minGridZ;
-
-		if (nearEastEdge) gridSizeXPositive += gridScalar;
-		if (nearWestEdge) gridSizeXNegative += gridScalar;
-		if (nearSouthEdge) gridSizeZPositive += gridScalar;
-		if (nearNorthEdge) gridSizeZNegative += gridScalar;
-
-		if (nearEastEdge || nearWestEdge || nearSouthEdge || nearNorthEdge) {
-
-			System.out.println("yes!");
-			return true; // The player is near the void! Generate more!
-		}
-
-//		System.out.println("no");
-		return false;
+		return x >= gridX1 &&
+			x <= gridX2 &&
+			z >= gridZ1 &&
+			z <= gridZ2;
 	}
+
+//	public boolean isPlayerNearEdge(ServerPlayerEntity player, PoolWorldState state) {
+//		if (isGenerating || rooms.isEmpty()) {
+//			return false;
+//		}
+//
+//		// 1. Convert player's physical block position to your grid coordinates
+//		// (You will need to adjust this math based on how big your actual rooms are in-game)
+//		int playerGridX = (int) Math.floor(player.getX() / 8);
+//		int playerGridZ = (int) Math.floor(player.getZ() / 8);
+//
+//		// 2. Define how close they can get before triggering a new tile generation
+//		int bufferZone = 3; // Start generating when they are 5 rooms away from the edge
+//
+//		int minGridX = -gridSizeXNegative;
+//		int maxGridX = gridSizeXPositive;
+//		int minGridZ = -gridSizeZNegative;
+//		int maxGridZ = gridSizeZPositive;
+//
+//		boolean nearEastEdge = playerGridX + bufferZone >= maxGridX;
+//		boolean nearWestEdge = playerGridX - bufferZone <= minGridX;
+//		boolean nearSouthEdge = playerGridZ + bufferZone >= maxGridZ;
+//		boolean nearNorthEdge = playerGridZ - bufferZone <= minGridZ;
+//
+//		if (nearEastEdge) gridSizeXPositive += gridSquareLength;
+//		if (nearWestEdge) gridSizeXNegative += gridSquareLength;
+//		if (nearSouthEdge) gridSizeZPositive += gridSquareLength;
+//		if (nearNorthEdge) gridSizeZNegative += gridSquareLength;
+//
+//		if (nearEastEdge || nearWestEdge || nearSouthEdge || nearNorthEdge) {
+//
+//			System.out.println("yes!");
+//			return true; // The player is near the void! Generate more!
+//		}
+//
+//		System.out.println("no");
+//		return false;
+//	}
 
 //	Helpers -----------
 
@@ -695,4 +728,16 @@ public class PoolWorldState extends PersistentState {
 
 		return false;
 	}
+
+	private int availableConnections1x1(RoomNode room) {
+		int available = 0;
+
+		if (room.northConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ - 1))) available++;
+		if (room.eastConnection == null && !rooms.containsKey(Pair.of(room.gridX + 1, room.gridZ))) available++;
+		if (room.southConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ + 1))) available++;
+		if (room.westConnection == null && !rooms.containsKey(Pair.of(room.gridX - 1, room.gridZ))) available++;
+
+		return available;
+	}
+
 }
