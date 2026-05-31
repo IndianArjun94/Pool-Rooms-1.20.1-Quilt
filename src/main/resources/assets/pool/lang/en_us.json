@@ -15,5 +15,7 @@
   "block.pool.transparent_block": "Transparent Block",
   "block.pool.translucent_block": "Translucent Block",
 
-  "block.pool.skybox_mask_block": "Skybox Mask"
+  "block.pool.skybox_mask_block": "Skybox Mask",
+
+  "block.pool.pool_ladder": "Pool Ladder"
 }

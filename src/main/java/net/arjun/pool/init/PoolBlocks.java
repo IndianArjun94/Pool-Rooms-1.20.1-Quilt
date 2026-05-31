@@ -62,6 +62,10 @@ public class PoolBlocks {
 			.luminance(3)
 			.sounds(BlockSoundGroup.GLASS).strength(99999,999999)));
 
+	public static final Block POOL_LADDER = registerBlock("pool_ladder",
+		new PoolLadderBlock(QuiltBlockSettings.copyOf(Blocks.IRON_BARS)
+			.nonOpaque()));
+
 	private static Block registerBlock(String name, Block block) {
 		registerBlockItem(name, block);
 		return Registry.register(Registries.BLOCK, new Identifier(PoolRooms.MOD_ID, name), block);
