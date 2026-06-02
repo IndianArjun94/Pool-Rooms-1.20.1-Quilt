@@ -1,8 +1,23 @@
 {
-  "variants": {
-    "facing=north": { "model": "pool:block/pool_ladder" },
-    "facing=east":  { "model": "pool:block/pool_ladder", "y": 90 },
-    "facing=south": { "model": "pool:block/pool_ladder", "y": 180 },
-    "facing=west":  { "model": "pool:block/pool_ladder", "y": 270 }
-  }
+  "multipart": [
+    { "when": { "top": "false", "bottom": "false", "facing": "south" }, "apply": { "model": "pool:block/pool_ladder_straight" } },
+    { "when": { "top": "false", "bottom": "false", "facing": "west" },  "apply": { "model": "pool:block/pool_ladder_straight", "y": 90 } },
+    { "when": { "top": "false", "bottom": "false", "facing": "north" }, "apply": { "model": "pool:block/pool_ladder_straight", "y": 180 } },
+    { "when": { "top": "false", "bottom": "false", "facing": "east" },  "apply": { "model": "pool:block/pool_ladder_straight", "y": 270 } },
+
+    { "when": { "top": "true", "bottom": "false", "facing": "south" }, "apply": { "model": "pool:block/pool_ladder_top" } },
+    { "when": { "top": "true", "bottom": "false", "facing": "west" },  "apply": { "model": "pool:block/pool_ladder_top", "y": 90 } },
+    { "when": { "top": "true", "bottom": "false", "facing": "north" }, "apply": { "model": "pool:block/pool_ladder_top", "y": 180 } },
+    { "when": { "top": "true", "bottom": "false", "facing": "east" },  "apply": { "model": "pool:block/pool_ladder_top", "y": 270 } },
+
+    { "when": { "top": "false", "bottom": "true", "facing": "south" }, "apply": { "model": "pool:block/pool_ladder_bottom" } },
+    { "when": { "top": "false", "bottom": "true", "facing": "west" },  "apply": { "model": "pool:block/pool_ladder_bottom", "y": 90 } },
+    { "when": { "top": "false", "bottom": "true", "facing": "north" }, "apply": { "model": "pool:block/pool_ladder_bottom", "y": 180 } },
+    { "when": { "top": "false", "bottom": "true", "facing": "east" },  "apply": { "model": "pool:block/pool_ladder_bottom", "y": 270 } },
+
+    { "when": { "top": "true", "bottom": "true", "facing": "south" }, "apply": { "model": "pool:block/pool_ladder_straight" } },
+    { "when": { "top": "true", "bottom": "true", "facing": "west" },  "apply": { "model": "pool:block/pool_ladder_straight", "y": 90 } },
+    { "when": { "top": "true", "bottom": "true", "facing": "north" }, "apply": { "model": "pool:block/pool_ladder_straight", "y": 180 } },
+    { "when": { "top": "true", "bottom": "true", "facing": "east" },  "apply": { "model": "pool:block/pool_ladder_straight", "y": 270 } }
+  ]
 }

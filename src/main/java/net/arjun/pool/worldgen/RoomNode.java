@@ -77,7 +77,7 @@ public class RoomNode {
 
 			if (c == 1) { // dead end (1 connection)
 				Direction d = dirs.get(0);
-				return "1x1_dead_end_" + dirName(d);
+				return "1x1_" + dirName(d);
 			} else if (c == 2) { // straight or turn (2 connections)
 				Direction a = dirs.get(0);
 				Direction b = dirs.get(1);
@@ -85,16 +85,16 @@ public class RoomNode {
 				// straight?
 				if ((a == Direction.NORTH && b == Direction.SOUTH) ||
 					(a == Direction.SOUTH && b == Direction.NORTH)) {
-					return "1x1_straight_north_south";
+					return "1x1_north_south";
 				}
 
 				if ((a == Direction.EAST && b == Direction.WEST) ||
 					(a == Direction.WEST && b == Direction.EAST)) {
-					return "1x1_straight_east_west";
+					return "1x1_east_west";
 				}
 
 				// turn
-				return "1x1_turn_" + dirName(a) + "_" + dirName(b);
+				return "1x1_" + dirName(a) + "_" + dirName(b);
 			} else if (c == 3) { // "T" pattern (3 connections) [returns the top of "T" direction]
 				if (!dirs.contains(Direction.NORTH)) return "1x1_t_north";
 				if (!dirs.contains(Direction.SOUTH)) return "1x1_t_south";
@@ -103,49 +103,55 @@ public class RoomNode {
 			} else if (c == 4) { // 4 way (4 connections)
 				return "1x1_four_way";
 			}
-		} else if (room.roomSize == RoomSize.R2x2) {
-			if (room.northConnection != null) dirs.add(Direction.NORTH);
-			if (room.eastConnection != null) dirs.add(Direction.EAST);
-			if (room.southConnection != null) dirs.add(Direction.SOUTH);
-			if (room.westConnection != null) dirs.add(Direction.WEST);
+		}
 
-			int c = dirs.size();
+//		else if (room.roomSize == RoomSize.R2x2) {
+//			if (room.northConnection != null) dirs.add(Direction.NORTH);
+//			if (room.eastConnection != null) dirs.add(Direction.EAST);
+//			if (room.southConnection != null) dirs.add(Direction.SOUTH);
+//			if (room.westConnection != null) dirs.add(Direction.WEST);
+//
+//			int c = dirs.size();
+//
+//			if (c == 1) {
+//				Direction d = dirs.get(0);
+//				if (d == Direction.NORTH) return "2x2_dead_end_south";
+//				if (d == Direction.EAST) return "2x2_dead_end_west";
+//				if (d == Direction.SOUTH) return "2x2_dead_end_north";
+//				if (d == Direction.WEST) return "2x2_dead_end_east";
+//			} else if (c == 2) {
+//				int roomVersion = new Random().nextInt(1,4);
+//				return "2x2_straight_" + dirName(room.generationDirection) + "_" + roomVersion;
+//			}
+//		}
+//
+//		else if (room.roomSize == RoomSize.R1x2) {
+//			if (room.northConnection != null) dirs.add(Direction.NORTH);
+//			if (room.eastConnection != null) dirs.add(Direction.EAST);
+//			if (room.southConnection != null) dirs.add(Direction.SOUTH);
+//			if (room.westConnection != null) dirs.add(Direction.WEST);
+//
+//			int c = dirs.size();
+//
+//			if (c == 2) {
+//				Direction a = dirs.get(0);
+//				Direction b = dirs.get(1);
+//
+//				if ((a == Direction.NORTH && b == Direction.SOUTH) ||
+//					(a == Direction.SOUTH && b == Direction.NORTH)) {
+//					return "1x2_straight_north_south_1";
+//				}
+//
+//				if ((a == Direction.EAST && b == Direction.WEST) ||
+//					(a == Direction.WEST && b == Direction.EAST)) {
+//					return "1x2_straight_east_west_1";
+//				}
+//			} else {
+//				return "1x2_dead_end_" + dirName(room.generationDirection) + "_1";
+//			}
+//		}
 
-			if (c == 1) {
-				Direction d = dirs.get(0);
-				if (d == Direction.NORTH) return "2x2_dead_end_south";
-				if (d == Direction.EAST) return "2x2_dead_end_west";
-				if (d == Direction.SOUTH) return "2x2_dead_end_north";
-				if (d == Direction.WEST) return "2x2_dead_end_east";
-			} else if (c == 2) {
-				int roomVersion = new Random().nextInt(1,4);
-				return "2x2_straight_" + dirName(room.generationDirection) + "_" + roomVersion;
-			}
-		} else if (room.roomSize == RoomSize.R1x2) {
-			if (room.northConnection != null) dirs.add(Direction.NORTH);
-			if (room.eastConnection != null) dirs.add(Direction.EAST);
-			if (room.southConnection != null) dirs.add(Direction.SOUTH);
-			if (room.westConnection != null) dirs.add(Direction.WEST);
-
-			int c = dirs.size();
-
-			if (c == 2) {
-				Direction a = dirs.get(0);
-				Direction b = dirs.get(1);
-
-				if ((a == Direction.NORTH && b == Direction.SOUTH) ||
-					(a == Direction.SOUTH && b == Direction.NORTH)) {
-					return "1x2_straight_north_south_1";
-				}
-
-				if ((a == Direction.EAST && b == Direction.WEST) ||
-					(a == Direction.WEST && b == Direction.EAST)) {
-					return "1x2_straight_east_west_1";
-				}
-			} else {
-				return "1x2_dead_end_" + dirName(room.generationDirection) + "_1";
-			}
-		} else if (room.roomSize == RoomSize.START) {
+		else if (room.roomSize == RoomSize.START) {
 			return "start";
 		}
 
