@@ -26,7 +26,7 @@ public class PoolWorldState extends PersistentState {
 
 	public final int gridSquareLength = 20;
 
-	public Pair<Integer,Integer> currentGridSquare = Pair.of(0,0);
+	public Pair<Integer, Integer> currentGridSquare = Pair.of(0, 0);
 
 	public final Set<Pair<Integer, Integer>> generatedGridSquares = ConcurrentHashMap.newKeySet();
 
@@ -48,38 +48,6 @@ public class PoolWorldState extends PersistentState {
 		this.seed = new Random().nextLong(); // new world, random seed
 		instance = this;
 		random = new Random(seed);
-	}
-
-	public void expandMapAsync(ServerWorld world) {
-		if (isGenerating) return;
-		isGenerating = true;
-
-		CompletableFuture.supplyAsync(() -> {
-
-			// Runs in the background (No lag!)
-			return generateMap();
-
-		}).whenCompleteAsync((completedRoomMap, throwable) -> {
-			if (throwable != null) {
-				throwable.printStackTrace();
-				isGenerating = false;
-				return;
-			}
-
-			// Runs on the Main Thread once the math is finished
-			// NOW we can safely update the global variables and save the game!
-			PoolRooms.currentMap = completedRoomMap;
-
-//			System.out.println(gridSizeXNegative);
-
-			// If you have a class-level 'rooms' map, update it here too:
-			// this.rooms.putAll(completedRoomMap);
-
-			this.markDirty(); // Save the new data to disk
-
-			isGenerating = false;
-
-		}, world.getServer());
 	}
 
 	@Override
@@ -109,10 +77,10 @@ public class PoolWorldState extends PersistentState {
 
 		int usedSlots = 0;
 
-		int gridX1 = currentGridSquare.first*gridSquareLength - ((gridSquareLength/2)-1);
-		int gridX2 = currentGridSquare.first*gridSquareLength + (gridSquareLength/2);
-		int gridZ1 = currentGridSquare.second*gridSquareLength - ((gridSquareLength/2)-1);
-		int gridZ2 = currentGridSquare.second*gridSquareLength + (gridSquareLength/2);
+		int gridX1 = currentGridSquare.first * gridSquareLength - ((gridSquareLength / 2) - 1);
+		int gridX2 = currentGridSquare.first * gridSquareLength + (gridSquareLength / 2);
+		int gridZ1 = currentGridSquare.second * gridSquareLength - ((gridSquareLength / 2) - 1);
+		int gridZ2 = currentGridSquare.second * gridSquareLength + (gridSquareLength / 2);
 
 		ArrayList<RoomNode> boundaryRoomsToConnect = new ArrayList<>();
 
@@ -132,7 +100,7 @@ public class PoolWorldState extends PersistentState {
 			usedSlots += 9;
 
 
-//		CODE TO ADD A ROOM ------------------------------------------
+			// CODE TO ADD A ROOM ------------------------------------------
 			for (int x = start.gridX; x < start.gridX + start.gridLengthX; x++) {
 				for (int z = start.gridZ; z < start.gridZ + start.gridLengthZ; z++) {
 					rooms.put(Pair.of(x, z), start);
@@ -206,7 +174,7 @@ public class PoolWorldState extends PersistentState {
 
 			// seed in a room in the middle of the new grid square
 
-			Pair<Integer,Integer> seedCoords = Pair.of((gridX1+gridX2-1)/2, (gridZ1+gridZ2-1)/2);
+			Pair<Integer, Integer> seedCoords = Pair.of((gridX1 + gridX2 - 1) / 2, (gridZ1 + gridZ2 - 1) / 2);
 			RoomNode seedRoom = new RoomNode(seedCoords.first, seedCoords.second, 1, 1, RoomSize.R1x1, Direction.NORTH);
 
 			rooms.put(seedCoords, seedRoom);
@@ -242,6 +210,8 @@ public class PoolWorldState extends PersistentState {
 
 		int stackEmptyStreak = 0;
 
+		boolean roomRequiresConnection = false;
+
 
 		while (true) {
 			RoomNode room;
@@ -272,37 +242,40 @@ public class PoolWorldState extends PersistentState {
 
 			ArrayList<Direction> dirs = new ArrayList<>();
 
-			if (room.northConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ - 1))) { //  && room.gridZ != -(gridSizeZNegative-1)
+			int gridX = room.gridX +room.northConnectionPosition.first-1;
+			int gridZ = room.gridZ +room.northConnectionPosition.second-1;
+
+			if (room.northConnection == null && !rooms.containsKey(Pair.of(gridX, gridZ - 1))) { //  && gridZ != -(gridSizeZNegative-1)
 				dirs.add(Direction.NORTH);
-			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX, room.gridZ - 1)))) {
-				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX, room.gridZ - 1));
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(gridX, gridZ - 1))) || roomRequiresConnection) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(gridX, gridZ - 1));
 				foundBoundaryRoom.southConnection = room;
 				room.northConnection = foundBoundaryRoom;
 				boundaryRoomsToConnect.remove(foundBoundaryRoom);
 				continue;
 			}
-			if (room.eastConnection == null && !rooms.containsKey(Pair.of(room.gridX + 1, room.gridZ))) { //  && room.gridX != gridSizeXPositive
+			if (room.eastConnection == null && !rooms.containsKey(Pair.of(gridX + 1, gridZ))) { //  && gridX != gridSizeXPositive
 				dirs.add(Direction.EAST);
-			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX + 1, room.gridZ)))) {
-				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX + 1, room.gridZ));
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(gridX + 1, gridZ))) || roomRequiresConnection) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(gridX + 1, gridZ));
 				foundBoundaryRoom.westConnection = room;
 				room.eastConnection = foundBoundaryRoom;
 				boundaryRoomsToConnect.remove(foundBoundaryRoom);
 				continue;
 			}
-			if (room.southConnection == null && !rooms.containsKey(Pair.of(room.gridX, room.gridZ + 1))) { //  && room.gridZ != gridSizeZPositive
+			if (room.southConnection == null && !rooms.containsKey(Pair.of(gridX, gridZ + 1))) { //  && gridZ != gridSizeZPositive
 				dirs.add(Direction.SOUTH);
-			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX, room.gridZ + 1)))) {
-				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX, room.gridZ + 1));
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(gridX, gridZ + 1))) || roomRequiresConnection) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(gridX, gridZ + 1));
 				foundBoundaryRoom.northConnection = room;
 				room.southConnection = foundBoundaryRoom;
 				boundaryRoomsToConnect.remove(foundBoundaryRoom);
 				continue;
 			}
-			if (room.westConnection == null && !rooms.containsKey(Pair.of(room.gridX - 1, room.gridZ))) { //  && room.gridX != -(gridSizeXNegative-1)
+			if (room.westConnection == null && !rooms.containsKey(Pair.of(gridX - 1, gridZ))) { //  && gridX != -(gridSizeXNegative-1)
 				dirs.add(Direction.WEST);
-			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(room.gridX - 1, room.gridZ)))) {
-				RoomNode foundBoundaryRoom = rooms.get(Pair.of(room.gridX - 1, room.gridZ));
+			} else if (boundaryRoomsToConnect.contains(rooms.get(Pair.of(gridX - 1, gridZ))) || roomRequiresConnection) {
+				RoomNode foundBoundaryRoom = rooms.get(Pair.of(gridX - 1, gridZ));
 				foundBoundaryRoom.eastConnection = room;
 				room.westConnection = foundBoundaryRoom;
 				boundaryRoomsToConnect.remove(foundBoundaryRoom);
@@ -323,19 +296,17 @@ public class PoolWorldState extends PersistentState {
 
 			int availableConnections = availableConnections1x1(room);
 
-			if ((dir == Direction.NORTH && isInsideBounds(room.gridX, room.gridZ - 1) || (dir == Direction.NORTH && availableConnections != 1))) {
+			if ((dir == Direction.NORTH && isInsideBounds(gridX, gridZ - 1) || (dir == Direction.NORTH && availableConnections != 1))) {
 				offset[1] = -1;
-				room.northConnection = newRoom;
-				newRoom.southConnection = room;
-			} else if ((dir == Direction.EAST && isInsideBounds(room.gridX + 1, room.gridZ) || (dir == Direction.EAST && availableConnections != 1))) {
+			} else if ((dir == Direction.EAST && isInsideBounds(gridX + 1, gridZ) || (dir == Direction.EAST && availableConnections != 1))) {
 				offset[0] = 1;
 				room.eastConnection = newRoom;
 				newRoom.westConnection = room;
-			} else if (((dir == Direction.SOUTH && isInsideBounds(room.gridX, room.gridZ + 1) || (dir == Direction.SOUTH && availableConnections != 1)))) {
+			} else if (((dir == Direction.SOUTH && isInsideBounds(gridX, gridZ + 1) || (dir == Direction.SOUTH && availableConnections != 1)))) {
 				offset[1] = 1;
 				room.southConnection = newRoom;
 				newRoom.northConnection = room;
-			} else if (((dir == Direction.WEST && isInsideBounds(room.gridX - 1, room.gridZ) || (dir == Direction.WEST && availableConnections != 1)))) {
+			} else if (((dir == Direction.WEST && isInsideBounds(gridX - 1, gridZ) || (dir == Direction.WEST && availableConnections != 1)))) {
 				offset[0] = -1;
 				room.westConnection = newRoom;
 				newRoom.eastConnection = room;
@@ -344,15 +315,25 @@ public class PoolWorldState extends PersistentState {
 				continue;
 			}
 
-			newRoom.gridX = room.gridX + offset[0];
-			newRoom.gridZ = room.gridZ + offset[1];
-			newRoom.gridLengthX = 1;
-			newRoom.gridLengthZ = 1;
-			newRoom.roomSize = RoomSize.R1x1;
+			newRoom.gridX = gridX + offset[0];
+			newRoom.gridZ = gridZ + offset[1];
+
+			if (check2x2SpaceAvailable(rooms, newRoom.gridX, newRoom.gridZ, dir) && usedSlots % 10 == 0) {
+				newRoom.gridLengthX = 2;
+				newRoom.gridLengthZ = 2;
+				newRoom.roomSize = RoomSize.R2x2;
+				roomRequiresConnection = true;
+			} else {
+				newRoom.gridLengthX = 1;
+				newRoom.gridLengthZ = 1;
+				newRoom.roomSize = RoomSize.R1x1;
+			}
+
 			newRoom.generationDirection = dir;
+			newRoom.createConnectionPositions();
 
 
-			if (!isInsideBounds(newRoom.gridX, newRoom.gridZ)) {
+			if (!isInsideBounds(newRoom)) { // todo update isInsideBounds() to account for larger rooms
 				outOfBoundsRooms.add(newRoom);
 				continue;
 			}
@@ -530,81 +511,75 @@ public class PoolWorldState extends PersistentState {
 
 		generatedGridSquares.add(currentGridSquare);
 
-//		Saving the new map
-//		PoolRooms.currentMap = rooms;
 		return rooms;
 
 	}
 
-	private boolean isInsideBounds(int x, int z) {
-		int gridX1 = currentGridSquare.first*gridSquareLength - ((gridSquareLength/2)-1);
-		int gridX2 = currentGridSquare.first*gridSquareLength + (gridSquareLength/2);
-		int gridZ1 = currentGridSquare.second*gridSquareLength - ((gridSquareLength/2)-1);
-		int gridZ2 = currentGridSquare.second*gridSquareLength + (gridSquareLength/2);
-
-		return x >= gridX1 &&
-			x <= gridX2 &&
-			z >= gridZ1 &&
-			z <= gridZ2;
-	}
-
-//	public boolean isPlayerNearEdge(ServerPlayerEntity player, PoolWorldState state) {
-//		if (isGenerating || rooms.isEmpty()) {
-//			return false;
-//		}
-//
-//		// 1. Convert player's physical block position to your grid coordinates
-//		// (You will need to adjust this math based on how big your actual rooms are in-game)
-//		int playerGridX = (int) Math.floor(player.getX() / 8);
-//		int playerGridZ = (int) Math.floor(player.getZ() / 8);
-//
-//		// 2. Define how close they can get before triggering a new tile generation
-//		int bufferZone = 3; // Start generating when they are 5 rooms away from the edge
-//
-//		int minGridX = -gridSizeXNegative;
-//		int maxGridX = gridSizeXPositive;
-//		int minGridZ = -gridSizeZNegative;
-//		int maxGridZ = gridSizeZPositive;
-//
-//		boolean nearEastEdge = playerGridX + bufferZone >= maxGridX;
-//		boolean nearWestEdge = playerGridX - bufferZone <= minGridX;
-//		boolean nearSouthEdge = playerGridZ + bufferZone >= maxGridZ;
-//		boolean nearNorthEdge = playerGridZ - bufferZone <= minGridZ;
-//
-//		if (nearEastEdge) gridSizeXPositive += gridSquareLength;
-//		if (nearWestEdge) gridSizeXNegative += gridSquareLength;
-//		if (nearSouthEdge) gridSizeZPositive += gridSquareLength;
-//		if (nearNorthEdge) gridSizeZNegative += gridSquareLength;
-//
-//		if (nearEastEdge || nearWestEdge || nearSouthEdge || nearNorthEdge) {
-//
-//			System.out.println("yes!");
-//			return true; // The player is near the void! Generate more!
-//		}
-//
-//		System.out.println("no");
-//		return false;
-//	}
 
 //	Helpers -----------
 
-	private boolean check2x2SpaceAvailable(Map<Pair<Integer, Integer>, RoomNode> map, int gx, int gz) {
-		if (map.containsKey(Pair.of(gx, gz))) return false;
-		if (map.containsKey(Pair.of(gx + 1, gz))) return false;
-		if (map.containsKey(Pair.of(gx, gz + 1))) return false;
-		if (map.containsKey(Pair.of(gx + 1, gz + 1))) return false;
+	private boolean isInsideBounds(int gx, int gz) {
+		int gridX1 = currentGridSquare.first * gridSquareLength - ((gridSquareLength / 2) - 1);
+		int gridX2 = currentGridSquare.first * gridSquareLength + (gridSquareLength / 2);
+		int gridZ1 = currentGridSquare.second * gridSquareLength - ((gridSquareLength / 2) - 1);
+		int gridZ2 = currentGridSquare.second * gridSquareLength + (gridSquareLength / 2);
 
-		return true;
+		return gx >= gridX1 &&
+			gx <= gridX2 &&
+			gz >= gridZ1 &&
+			gz <= gridZ2;
 	}
 
-	private boolean check2x2SpaceAvailable(Map<Pair<Integer, Integer>, RoomNode> map, RoomNode room) {
-		if (map.containsKey(Pair.of(room.gridX, room.gridZ))) return false;
-		if (map.containsKey(Pair.of(room.gridX + room.gridLengthX - 1, room.gridZ))) return false;
-		if (map.containsKey(Pair.of(room.gridX, room.gridZ + room.gridLengthZ))) return false;
-		if (map.containsKey(Pair.of(room.gridX + room.gridLengthX - 1, room.gridZ + room.gridLengthZ))) return false;
+	private boolean isInsideBounds(RoomNode room) {
+		int gridX1 = currentGridSquare.first * gridSquareLength - ((gridSquareLength / 2) - 1);
+		int gridX2 = currentGridSquare.first * gridSquareLength + (gridSquareLength / 2);
+		int gridZ1 = currentGridSquare.second * gridSquareLength - ((gridSquareLength / 2) - 1);
+		int gridZ2 = currentGridSquare.second * gridSquareLength + (gridSquareLength / 2);
+
+		int roomStartX = room.gridX;
+		int roomEndX = room.gridX + room.gridLengthX - 1;
+
+		int roomStartZ = room.gridZ;
+		int roomEndZ = room.gridZ + room.gridLengthZ - 1;
+
+		return roomStartX >= gridX1 &&
+			roomEndX <= gridX2 &&
+			roomStartZ >= gridZ1 &&
+			roomEndZ <= gridZ2;
+	}
+
+	private boolean check2x2SpaceAvailable(Map<Pair<Integer, Integer>, RoomNode> map, int gx, int gz, Direction direction) {
+		int xOffset = 0;
+		int zOffset = 0;
+
+		if (direction == Direction.SOUTH) {
+
+		} else if (direction == Direction.WEST) {
+			xOffset -= 1;
+		} else if (direction == Direction.NORTH) {
+			xOffset -= 1;
+			zOffset -= 1;
+		} else if (direction == Direction.EAST) {
+			zOffset -= 1;
+		}
+
+		if (map.containsKey(Pair.of(gx + xOffset, gz + zOffset))) return false;
+		if (map.containsKey(Pair.of(gx + xOffset + 1, gz + zOffset))) return false;
+		if (map.containsKey(Pair.of(gx + xOffset, gz + 1 + zOffset))) return false;
+		if (map.containsKey(Pair.of(gx + xOffset + 1, gz + 1 + zOffset))) return false;
 
 		return true;
+
 	}
+
+//	private boolean check2x2SpaceAvailable(Map<Pair<Integer, Integer>, RoomNode> map, RoomNode room) {
+//		if (map.containsKey(Pair.of(room.gridX, room.gridZ))) return false;
+//		if (map.containsKey(Pair.of(room.gridX + room.gridLengthX - 1, room.gridZ))) return false;
+//		if (map.containsKey(Pair.of(room.gridX, room.gridZ + room.gridLengthZ))) return false;
+//		if (map.containsKey(Pair.of(room.gridX + room.gridLengthX - 1, room.gridZ + room.gridLengthZ))) return false;
+//
+//		return true;
+//	}
 
 	private boolean check1x2SpaceAvailable(Map<Pair<Integer, Integer>, RoomNode> map, int gx, int gz, int lengthX, int lengthZ) {
 		if (map.containsKey(Pair.of(gx, gz))) return false;

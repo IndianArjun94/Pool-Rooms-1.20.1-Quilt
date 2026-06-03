@@ -25,12 +25,12 @@ public class RoomNode {
 	public boolean westAllowed = true;
 
 	public Direction generationDirection;
-	public Pair<Integer,Integer> generationPosition;
+	public Pair<Integer, Integer> generationPosition;
 
-	public Pair<Integer,Integer> northConnectionPosition; // where the neighboring rooms are
-	public Pair<Integer,Integer> eastConnectionPosition; // these go by chunks
-	public Pair<Integer,Integer> southConnectionPosition; // a 2x2 room may want an entrance on the left or right side of the wall
-	public Pair<Integer,Integer> westConnectionPosition; // so that room would have something other than 0 here
+	public Pair<Integer, Integer> northConnectionPosition; // where the neighboring rooms are
+	public Pair<Integer, Integer> eastConnectionPosition; // these go by chunks
+	public Pair<Integer, Integer> southConnectionPosition; // a 2x2 room may want an entrance on the left or right side of the wall
+	public Pair<Integer, Integer> westConnectionPosition; // so that room would have something other than 0 here
 
 	public String structureId;
 
@@ -57,7 +57,7 @@ public class RoomNode {
 
 	public RoomNode(Direction generationDirection, int nx, int nz, RoomSize roomSize) {
 		this.generationDirection = generationDirection;
-		this.generationPosition = Pair.of(nx,nz);
+		this.generationPosition = Pair.of(nx, nz);
 
 		this.roomSize = roomSize;
 	}
@@ -105,25 +105,25 @@ public class RoomNode {
 			}
 		}
 
-//		else if (room.roomSize == RoomSize.R2x2) {
-//			if (room.northConnection != null) dirs.add(Direction.NORTH);
-//			if (room.eastConnection != null) dirs.add(Direction.EAST);
-//			if (room.southConnection != null) dirs.add(Direction.SOUTH);
-//			if (room.westConnection != null) dirs.add(Direction.WEST);
-//
-//			int c = dirs.size();
-//
-//			if (c == 1) {
-//				Direction d = dirs.get(0);
-//				if (d == Direction.NORTH) return "2x2_dead_end_south";
-//				if (d == Direction.EAST) return "2x2_dead_end_west";
-//				if (d == Direction.SOUTH) return "2x2_dead_end_north";
-//				if (d == Direction.WEST) return "2x2_dead_end_east";
-//			} else if (c == 2) {
-//				int roomVersion = new Random().nextInt(1,4);
-//				return "2x2_straight_" + dirName(room.generationDirection) + "_" + roomVersion;
-//			}
-//		}
+		else if (room.roomSize == RoomSize.R2x2) {
+			if (room.northConnection != null) dirs.add(Direction.NORTH);
+			if (room.eastConnection != null) dirs.add(Direction.EAST);
+			if (room.southConnection != null) dirs.add(Direction.SOUTH);
+			if (room.westConnection != null) dirs.add(Direction.WEST);
+
+			int c = dirs.size();
+
+			if (c == 1) {
+				Direction d = dirs.get(0);
+				if (d == Direction.NORTH) return "2x2_dead_end_south";
+				if (d == Direction.EAST) return "2x2_dead_end_west";
+				if (d == Direction.SOUTH) return "2x2_dead_end_north";
+				if (d == Direction.WEST) return "2x2_dead_end_east";
+			} else if (c == 2) {
+				int roomVersion = new Random().nextInt(1,4);
+				return "2x2_straight_" + dirName(room.generationDirection) + "_" + roomVersion;
+			}
+		}
 //
 //		else if (room.roomSize == RoomSize.R1x2) {
 //			if (room.northConnection != null) dirs.add(Direction.NORTH);
@@ -214,18 +214,18 @@ public class RoomNode {
 				gridLengthZ = 2;
 			} else if (generationDirection == Direction.EAST) {
 				gridX = generationPosition.first;
-				gridZ = generationPosition.second-1;
+				gridZ = generationPosition.second - 1;
 
 				gridLengthX = 2;
 				gridLengthZ = 2;
 			} else if (generationDirection == Direction.NORTH) {
-				gridX = generationPosition.first-1;
-				gridZ = generationPosition.second-1;
+				gridX = generationPosition.first - 1;
+				gridZ = generationPosition.second - 1;
 
 				gridLengthX = 2;
 				gridLengthZ = 2;
 			} else if (generationDirection == Direction.WEST) {
-				gridX = generationPosition.first-1;
+				gridX = generationPosition.first - 1;
 				gridZ = generationPosition.second;
 
 				gridLengthX = 2;
@@ -245,7 +245,7 @@ public class RoomNode {
 			eastConnectionPosition = Pair.of(gridX, gridZ);
 			southConnectionPosition = Pair.of(gridX, gridZ);
 		} else if (roomSize == RoomSize.R1x2) {
-			 if (generationDirection == Direction.SOUTH) {
+			if (generationDirection == Direction.SOUTH) {
 				eastAllowed = false;
 				westAllowed = false;
 
@@ -278,29 +278,29 @@ public class RoomNode {
 				eastAllowed = false;
 				westAllowed = false;
 
-				southConnectionPosition = Pair.of(gridX, gridZ + 1);
 				northConnectionPosition = Pair.of(gridX, gridZ);
+				southConnectionPosition = Pair.of(gridX + 1, gridZ + 1);
 
 			} else if (generationDirection == Direction.EAST) {
 				northAllowed = false;
 				southAllowed = false;
 
 				westConnectionPosition = Pair.of(gridX, gridZ + 1);
-				eastConnectionPosition = Pair.of(gridX + 1, gridZ + 1);
+				eastConnectionPosition = Pair.of(gridX + 1, gridZ);
 
 			} else if (generationDirection == Direction.NORTH) {
 				eastAllowed = false;
 				westAllowed = false;
 
-				northConnectionPosition = Pair.of(gridX + 1, gridZ);
 				southConnectionPosition = Pair.of(gridX + 1, gridZ + 1);
+				northConnectionPosition = Pair.of(gridX, gridZ);
 
 			} else if (generationDirection == Direction.WEST) {
 				northAllowed = false;
 				southAllowed = false;
 
 				eastConnectionPosition = Pair.of(gridX + 1, gridZ);
-				westConnectionPosition = Pair.of(gridX, gridZ);
+				westConnectionPosition = Pair.of(gridX, gridZ + 1);
 			}
 		}
 
